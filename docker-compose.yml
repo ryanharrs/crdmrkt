@@ -1,0 +1,55 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: crdmrkt_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: crdmrkt_development
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - crdmrkt_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crdmrkt_backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - RAILS_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/crdmrkt_development
+    volumes:
+      - ./backend:/app
+      - /app/vendor/bundle
+    depends_on:
+      - mongodb
+    networks:
+      - crdmrkt_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: crdmrkt_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - crdmrkt_network
+    environment:
+      - VITE_API_URL=http://localhost:3001
+
+volumes:
+  mongodb_data:
+
+networks:
+  crdmrkt_network:
+    driver: bridge
