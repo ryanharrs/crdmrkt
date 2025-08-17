@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node server.js"
+    "preview": "vite preview",
+    "start": "node server.js",
+    "check-lock": "npm ci --dry-run",
+    "fix-lock": "rm package-lock.json && npm install"
   },
   "dependencies": {
     "react": "^18.2.0",
