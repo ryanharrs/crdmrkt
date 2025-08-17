@@ -7,14 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "serve -s dist -l $PORT",
+    "start": "node server.js",
     "check-lock": "npm ci --dry-run",
     "fix-lock": "rm package-lock.json && npm install"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "serve": "^14.2.0"
+    "express": "^4.18.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
