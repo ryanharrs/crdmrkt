@@ -8,7 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 3000;
+// Railway typically uses port 8080 as default
+const port = process.env.PORT || 8080;
+
+console.log('🔍 Environment check:');
+console.log('PORT env var:', process.env.PORT);
+console.log('Using port:', port);
 
 // Serve static files from dist directory
 app.use(express.static(join(__dirname, 'dist')));
