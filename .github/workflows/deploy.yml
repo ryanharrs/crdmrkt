@@ -1,15 +1,10 @@
-name: Deploy to Production
+name: Test and Validate
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
-  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
 
 jobs:
   test:
@@ -44,115 +39,6 @@ jobs:
     
     - name: Build frontend
       run: npm run build
-
-  build-and-push:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    permissions:
-      contents: read
-      packages: write
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Extract metadata for backend
-      id: meta-backend
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-    
-    - name: Extract metadata for frontend
-      id: meta-frontend
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
-        tags: |
-          type=ref,event=branch
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-    
-    - name: Build and push backend image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile.prod
-        push: true
-        tags: ${{ steps.meta-backend.outputs.tags }}
-        labels: ${{ steps.meta-backend.outputs.labels }}
-    
-    - name: Build and push frontend image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile.frontend.prod
-        push: true
-        tags: ${{ steps.meta-frontend.outputs.tags }}
-        labels: ${{ steps.meta-frontend.outputs.labels }}
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    # This section will vary based on your deployment platform
-    # Uncomment and modify based on your chosen platform:
-    
-    # For Railway:
-    # - name: Deploy to Railway
-    #   uses: railway-deploy-action@v1
-    #   with:
-    #     token: ${{ secrets.RAILWAY_TOKEN }}
-    #     service: your-service-name
-    
-    # For DigitalOcean App Platform:
-    # - name: Deploy to DigitalOcean
-    #   uses: digitalocean/app_action@v1
-    #   with:
-    #     app_name: your-app-name
-    #     token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-    
-    # For AWS ECS:
-    # - name: Deploy to AWS ECS
-    #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-    #   with:
-    #     task-definition: task-definition.json
-    #     service: your-service-name
-    #     cluster: your-cluster-name
-    
-    # For custom server deployment:
-    # - name: Deploy to server
-    #   uses: appleboy/ssh-action@v1.0.0
-    #   with:
-    #     host: ${{ secrets.HOST }}
-    #     username: ${{ secrets.USERNAME }}
-    #     key: ${{ secrets.PRIVATE_KEY }}
-    #     script: |
-    #       cd /path/to/your/app
-    #       docker compose pull
-    #       docker compose up -d
-    
-    - name: Placeholder deployment step
-      run: |
-        echo "🚀 Deployment configuration needed!"
-        echo "Please uncomment and configure the deployment step for your platform"
-        echo "Available images:"
-        echo "Backend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest"
-        echo "Frontend: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest"
+      
+    - name: ✅ All checks passed
+      run: echo "✅ Code is ready for Railway deployment!"
