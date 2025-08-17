@@ -1,0 +1,10 @@
+# Ensure package-lock.json is treated as text
+package-lock.json text eol=lf
+
+# Prevent binary files from being compared
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

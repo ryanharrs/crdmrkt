@@ -31,6 +31,9 @@ jobs:
         node-version: '18'
         cache: 'npm'
     
+    - name: Check package-lock.json sync
+      run: npm ci --dry-run
+      
     - name: Install frontend dependencies
       run: npm ci
     

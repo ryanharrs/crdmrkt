@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "serve -s dist -l $PORT"
+    "start": "serve -s dist -l $PORT",
+    "check-lock": "npm ci --dry-run",
+    "fix-lock": "rm package-lock.json && npm install"
   },
   "dependencies": {
     "react": "^18.2.0",
