@@ -1,0 +1,70 @@
+# CrdMrkt Project Rules
+
+## 🎨 CRITICAL: Future Redesign Strategy
+**This project is being built with a FUTURE REDESIGN in mind. A designer will be hired to completely overhaul the visual appearance. The current development approach MUST support this by:**
+- Building a comprehensive central design system that isolates ALL visual decisions
+- Making it possible to transform the entire app's look by only modifying `theme.js` and `global.css`
+- Ensuring NO hardcoded styles exist anywhere in components
+- Creating reusable, theme-agnostic components that work with any visual design
+
+## Frontend Development Guidelines
+
+### Design System First Approach (MANDATORY)
+- ALWAYS use components from `src/design-system/` for any UI elements
+- Before creating new components, check if they can be built using existing design system components
+- When adding new UI elements, create them as reusable design system components
+- All styling should reference `theme.js` values, never hardcode colors/spacing
+- Future redesigns should only require changes to `theme.js` and `global.css`
+- **Think like you're building LEGO blocks that a designer can rearrange and restyle**
+
+### Component Structure
+- Use React functional components with hooks
+- Import design system components: `import { Button, Input, Modal } from '../design-system'`
+- Follow the established pattern of themed styling with hover states
+- Keep components focused on a single responsibility
+
+### Authentication & State
+- User authentication state is managed in App.jsx
+- JWT tokens stored in localStorage as 'auth_token'
+- Backend API calls should include Authorization header when authenticated
+- Use environment variable VITE_API_URL for API endpoint (defaults to localhost:3001)
+
+### Backend Integration
+- API endpoints follow pattern: `/api/v1/resource`
+- All API responses should be JSON
+- Handle loading states and error messages in UI
+- Use proper HTTP status codes and error handling
+
+### File Organization
+```
+src/
+├── design-system/          # Central design library
+│   ├── theme.js            # Colors, typography, spacing
+│   ├── components/         # Reusable UI components  
+│   ├── global.css          # Global styles & animations
+│   └── index.js            # Exports
+├── components/             # App-specific components
+└── App.jsx                 # Main app with auth state
+```
+
+### Styling Guidelines
+- Use theme values: `theme.colors.primary[500]`, `theme.spacing[4]`, etc.
+- Implement hover effects using React state, not CSS pseudo-selectors
+- Use theme.shadows, theme.borderRadius, theme.typography values
+- Animations should use theme.animation.duration and easing values
+- Mobile-first responsive design using theme.breakpoints
+
+### Future Redesign Preparation (TOP PRIORITY)
+- **GOAL**: A designer should be able to completely transform the app's appearance by only touching `theme.js` and `global.css`
+- All visual changes should be possible through theme.js modifications
+- Components should be generic enough to work with different visual themes
+- Avoid hardcoded styles - everything should be configurable
+- Document component props and variants clearly
+- **Test**: Ask yourself "Could a designer change this app from blue/corporate to pink/playful by only editing the theme?" If no, refactor.
+- **Money-saver**: This approach will save thousands in development costs when the redesign happens
+
+### Development Workflow
+- Test locally with docker-compose for full stack
+- Use Railway for production deployment
+- Environment variables: VITE_API_URL (frontend), MONGODB_URI, SECRET_KEY_BASE (backend)
+- CORS configured for custom domain: www.crdmrkt.com

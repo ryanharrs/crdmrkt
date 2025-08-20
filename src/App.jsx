@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import './design-system/global.css'
+import { Button, Input, Navigation } from './design-system'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 
@@ -163,25 +165,11 @@ function App() {
 
   return (
     <div className="App">
-      <div className="top-nav">
-        <div className="nav-left">
-          <h1>CrdMrkt</h1>
-        </div>
-        <div className="nav-right">
-          {user ? (
-            <div className="user-menu">
-              <span className="welcome-text">Welcome, {user.first_name}!</span>
-              <button className="logout-button" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          ) : (
-            <button className="login-button" onClick={() => setShowLogin(true)}>
-              Log In
-            </button>
-          )}
-        </div>
-      </div>
+      <Navigation 
+        user={user}
+        onLogin={() => setShowLogin(true)}
+        onLogout={handleLogout}
+      />
       
       <header className="App-header">
         <h1>Hello HOMIES!</h1>
@@ -204,18 +192,26 @@ function App() {
           
           <div className="update-section">
             <h3>Update Favorite Number</h3>
-            <form onSubmit={updateFavoriteNumber}>
-              <input
+            <form onSubmit={updateFavoriteNumber} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+              <Input
                 type="number"
+                label="New Favorite Number"
                 value={newNumber}
                 onChange={(e) => setNewNumber(e.target.value)}
                 placeholder="Enter a new favorite number"
                 min="1"
                 disabled={updating}
+                style={{ flex: 1 }}
               />
-              <button type="submit" disabled={updating || !newNumber}>
-                {updating ? 'Updating...' : 'Update Number'}
-              </button>
+              <Button 
+                type="submit" 
+                variant="primary"
+                disabled={updating || !newNumber}
+                loading={updating}
+                style={{ marginBottom: '1rem' }}
+              >
+                Update Number
+              </Button>
             </form>
           </div>
         </div>

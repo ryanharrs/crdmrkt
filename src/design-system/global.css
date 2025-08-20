@@ -1,0 +1,61 @@
+/* Design System Global Styles */
+/* Your designer can modify these animations and global styles */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Focus styles for accessibility */
+.ds-button:focus-visible,
+.ds-input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Utility classes that your designer might find useful */
+.ds-text-center { text-align: center; }
+.ds-text-left { text-align: left; }
+.ds-text-right { text-align: right; }
+
+.ds-flex { display: flex; }
+.ds-flex-col { flex-direction: column; }
+.ds-items-center { align-items: center; }
+.ds-justify-center { justify-content: center; }
+.ds-justify-between { justify-content: space-between; }
+
+.ds-gap-1 { gap: 0.25rem; }
+.ds-gap-2 { gap: 0.5rem; }
+.ds-gap-3 { gap: 0.75rem; }
+.ds-gap-4 { gap: 1rem; }
+
+.ds-hidden { display: none; }
+.ds-block { display: block; }
+.ds-inline-block { display: inline-block; }
+

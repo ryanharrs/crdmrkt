@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './LoginForm.css'
+import { Button, Input, Modal } from '../design-system'
 
 const LoginForm = ({ onLogin, onSwitchToSignup, onClose }) => {
   const [formData, setFormData] = useState({
@@ -31,61 +31,78 @@ const LoginForm = ({ onLogin, onSwitchToSignup, onClose }) => {
   }
 
   return (
-    <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="auth-header">
-          <h2>Log In</h2>
-          <button className="close-button" onClick={onClose}>×</button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="error-message">{error}</div>}
-          
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
+    <Modal 
+      isOpen={true} 
+      onClose={onClose} 
+      title="Log In"
+      size="sm"
+    >
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {error && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            color: '#dc2626',
+            padding: '0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem'
+          }}>
+            {error}
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              disabled={loading}
-            />
-          </div>
-          
-          <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
-          </button>
-        </form>
+        )}
         
-        <div className="auth-switch">
-          <p>Don't have an account? 
-            <button 
-              type="button" 
-              className="switch-button" 
+        <Input
+          type="email"
+          name="email"
+          label="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          disabled={loading}
+        />
+        
+        <Input
+          type="password"
+          name="password"
+          label="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          disabled={loading}
+        />
+        
+        <Button 
+          type="submit" 
+          variant="primary" 
+          size="md"
+          disabled={loading}
+          loading={loading}
+          style={{ marginTop: '0.5rem' }}
+        >
+          Log In
+        </Button>
+        
+        <div style={{ 
+          textAlign: 'center', 
+          marginTop: '1rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          <p style={{ margin: 0, color: '#6b7280', fontSize: '0.875rem' }}>
+            Don't have an account?{' '}
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onSwitchToSignup}
               disabled={loading}
+              style={{ padding: '0', minHeight: 'auto', textDecoration: 'underline' }}
             >
               Sign Up
-            </button>
+            </Button>
           </p>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   )
 }
 

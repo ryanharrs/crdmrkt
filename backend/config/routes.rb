@@ -11,6 +11,19 @@ Rails.application.routes.draw do
       post 'auth/login', to: 'auth#login'
       get 'auth/me', to: 'auth#me'
       
+      # Card routes
+      resources :cards do
+        member do
+          post :toggle_sale
+          post :upload_image
+        end
+        collection do
+          get :my_cards
+          get :marketplace
+          get :search
+        end
+      end
+      
       # Ryan's favorite number routes
       get 'ryan/favorite_number', to: 'ryan#favorite_number'
       post 'ryan/favorite_number', to: 'ryan#update_favorite_number'

@@ -9,6 +9,9 @@ class User
   field :first_name, type: String
   field :last_name, type: String
   
+  # Relationships
+  has_many :cards, class_name: 'Card', foreign_key: 'owner_id'
+  
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: /\A[^@\s]+@[^@\s]+\z/ }
   validates :first_name, presence: true, length: { minimum: 2 }
