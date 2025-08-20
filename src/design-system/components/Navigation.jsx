@@ -7,6 +7,7 @@ const Navigation = ({
   user, 
   onLogin, 
   onLogout,
+  onUploadCards,
   className = '',
   ...props 
 }) => {
@@ -93,8 +94,9 @@ const Navigation = ({
   }
 
   const handleUploadCards = () => {
-    // TODO: Implement upload cards functionality
-    console.log('Upload Cards clicked')
+    if (onUploadCards) {
+      onUploadCards()
+    }
   }
 
   return (

@@ -11,6 +11,9 @@ export { default as Modal } from './components/Modal'
 export { default as Dropdown } from './components/Dropdown'
 export { default as DropdownItem } from './components/DropdownItem'
 export { default as Navigation } from './components/Navigation'
+export { default as Select } from './components/Select'
+export { default as FileUpload } from './components/FileUpload'
+export { default as CardUploadModal } from './components/CardUploadModal'
 
 // Add more components here as you build them
 // export { default as Card } from './components/Card'

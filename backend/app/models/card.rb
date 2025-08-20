@@ -1,6 +1,7 @@
 class Card
   include Mongoid::Document
   include Mongoid::Timestamps
+  include CarrierWave::Mongoid
   
   # Core Card Information
   field :player_name, type: String
@@ -46,11 +47,6 @@ class Card
   # Images & Media (CarrierWave + Cloudinary)
   mount_uploader :front_image, ImageUploader
   mount_uploader :back_image, ImageUploader
-  field :detail_image_urls, type: Array, default: [] # Array of additional image URLs
-  
-  # Legacy URL fields (for backwards compatibility)
-  field :front_image_url, type: String
-  field :back_image_url, type: String
   
   # Ownership & Marketplace
   field :owner_id, type: BSON::ObjectId   # Reference to User who owns the card

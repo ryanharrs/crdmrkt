@@ -8,6 +8,8 @@ const Input = ({
   variant = 'default',
   disabled = false,
   required = false,
+  multiline = false,
+  rows = 3,
   className = '',
   ...props 
 }) => {
@@ -97,12 +99,22 @@ const Input = ({
         </label>
       )}
       
-      <input
-        style={inputStyles}
-        className="ds-input"
-        disabled={disabled}
-        {...props}
-      />
+      {multiline ? (
+        <textarea
+          style={inputStyles}
+          className="ds-input"
+          disabled={disabled}
+          rows={rows}
+          {...props}
+        />
+      ) : (
+        <input
+          style={inputStyles}
+          className="ds-input"
+          disabled={disabled}
+          {...props}
+        />
+      )}
       
       {error && (
         <span style={errorStyles} className="ds-input-error">

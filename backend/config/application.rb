@@ -18,6 +18,10 @@ require "action_controller/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Require CarrierWave explicitly
+require 'carrierwave'
+require 'cloudinary'
+
 module CrdmrktBackend
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

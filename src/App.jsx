@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import './design-system/global.css'
-import { Button, Input, Navigation } from './design-system'
+import { Button, Input, Navigation, CardUploadModal } from './design-system'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 
@@ -18,6 +18,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [showLogin, setShowLogin] = useState(false)
   const [showSignup, setShowSignup] = useState(false)
+  const [showCardUpload, setShowCardUpload] = useState(false)
 
   useEffect(() => {
     const fetchFavoriteNumber = async () => {
@@ -155,6 +156,46 @@ function App() {
     setUser(null)
   }
 
+  const handleCardUpload = async (cardData, addAnother = false) => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const token = localStorage.getItem('auth_token')
+    
+    // Create FormData for file upload
+    const formData = new FormData()
+    
+    // Add all text fields to FormData
+    Object.keys(cardData).forEach(key => {
+      if (key === 'front_image' || key === 'back_image') {
+        if (cardData[key]) {
+          formData.append(`card[${key}]`, cardData[key])
+        }
+      } else if (cardData[key] !== null && cardData[key] !== undefined && cardData[key] !== '') {
+        formData.append(`card[${key}]`, cardData[key])
+      }
+    })
+
+    const response = await fetch(`${apiUrl}/api/v1/cards`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to upload card')
+    }
+
+    // If not adding another, close the modal
+    if (!addAnother) {
+      setShowCardUpload(false)
+    }
+
+    return data
+  }
+
   if (authLoading) {
     return (
       <div className="App">
@@ -169,6 +210,7 @@ function App() {
         user={user}
         onLogin={() => setShowLogin(true)}
         onLogout={handleLogout}
+        onUploadCards={() => setShowCardUpload(true)}
       />
       
       <header className="App-header">
@@ -240,6 +282,14 @@ function App() {
             setShowLogin(true)
           }}
           onClose={() => setShowSignup(false)}
+        />
+      )}
+
+      {showCardUpload && (
+        <CardUploadModal
+          isOpen={showCardUpload}
+          onClose={() => setShowCardUpload(false)}
+          onSubmit={handleCardUpload}
         />
       )}
     </div>
