@@ -6,3 +6,6 @@ Cloudinary.config do |config|
   config.secure = true
   config.cdn_subdomain = true
 end
+
+# CarrierWave configuration
+# Note: When using Cloudinary::CarrierWave, storage is handled automatically
