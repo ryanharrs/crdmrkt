@@ -193,15 +193,27 @@ class Api::V1::CardsController < ApplicationController
     end
     
     begin
-      # Upload directly to Cloudinary
+      # Debug: Check if Cloudinary config is available
+      Rails.logger.info "Environment variables check:"
+      Rails.logger.info "CLOUDINARY_CLOUD_NAME: #{ENV['CLOUDINARY_CLOUD_NAME'].present? ? 'SET' : 'MISSING'}"
+      Rails.logger.info "CLOUDINARY_API_KEY: #{ENV['CLOUDINARY_API_KEY'].present? ? 'SET' : 'MISSING'}"
+      Rails.logger.info "CLOUDINARY_API_SECRET: #{ENV['CLOUDINARY_API_SECRET'].present? ? 'SET' : 'MISSING'}"
+      
+      # Upload directly to Cloudinary with explicit config
       result = Cloudinary::Uploader.upload(
         image_file.tempfile,
-        folder: "hockey_cards",
-        resource_type: "image",
-        transformation: [
-          { quality: "auto", fetch_format: "auto" },
-          { width: 800, height: 600, crop: "limit" }
-        ]
+        {
+          folder: "hockey_cards",
+          resource_type: "image",
+          transformation: [
+            { quality: "auto", fetch_format: "auto" },
+            { width: 800, height: 600, crop: "limit" }
+          ],
+          # Explicitly pass config in case env vars aren't working
+          cloud_name: ENV['CLOUDINARY_CLOUD_NAME'],
+          api_key: ENV['CLOUDINARY_API_KEY'],
+          api_secret: ENV['CLOUDINARY_API_SECRET']
+        }
       )
       
       render json: {
