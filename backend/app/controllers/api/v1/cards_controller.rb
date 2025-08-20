@@ -194,10 +194,11 @@ class Api::V1::CardsController < ApplicationController
     
     begin
       # Debug: Check if Cloudinary config is available
-      Rails.logger.info "Environment variables check:"
-      Rails.logger.info "CLOUDINARY_CLOUD_NAME: #{ENV['CLOUDINARY_CLOUD_NAME'].present? ? 'SET' : 'MISSING'}"
-      Rails.logger.info "CLOUDINARY_API_KEY: #{ENV['CLOUDINARY_API_KEY'].present? ? 'SET' : 'MISSING'}"
-      Rails.logger.info "CLOUDINARY_API_SECRET: #{ENV['CLOUDINARY_API_SECRET'].present? ? 'SET' : 'MISSING'}"
+      puts "=== CLOUDINARY DEBUG ==="
+      puts "CLOUDINARY_CLOUD_NAME: #{ENV['CLOUDINARY_CLOUD_NAME'].present? ? 'SET' : 'MISSING'}"
+      puts "CLOUDINARY_API_KEY: #{ENV['CLOUDINARY_API_KEY'].present? ? 'SET' : 'MISSING'}"
+      puts "CLOUDINARY_API_SECRET: #{ENV['CLOUDINARY_API_SECRET'].present? ? 'SET' : 'MISSING'}"
+      puts "========================"
       
       # Upload directly to Cloudinary with explicit config
       result = Cloudinary::Uploader.upload(
