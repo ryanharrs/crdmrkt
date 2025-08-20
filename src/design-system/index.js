@@ -14,9 +14,10 @@ export { default as Navigation } from './components/Navigation'
 export { default as Select } from './components/Select'
 export { default as FileUpload } from './components/FileUpload'
 export { default as CardUploadModal } from './components/CardUploadModal'
+export { default as Card } from './components/Card'
+export { default as CardGallery } from './components/CardGallery'
 
 // Add more components here as you build them
-// export { default as Card } from './components/Card'
 // export { default as Badge } from './components/Badge'
 // export { default as Alert } from './components/Alert'
 

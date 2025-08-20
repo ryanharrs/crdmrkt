@@ -18,4 +18,7 @@ class ApplicationController < ActionController::API
       render json: { error: 'Authentication required' }, status: :unauthorized
     end
   end
+  
+  # Alias for compatibility
+  alias_method :authenticate_request, :require_authentication
 end

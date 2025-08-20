@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import './design-system/global.css'
-import { Button, Input, Navigation, CardUploadModal } from './design-system'
+import { Button, Input, Navigation, CardUploadModal, CardGallery } from './design-system'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 
@@ -213,55 +213,17 @@ function App() {
         onUploadCards={() => setShowCardUpload(true)}
       />
       
-      <header className="App-header">
-        <h1>Hello HOMIES!</h1>
-        <p>Welcome to CrdMrkt</p>
-        
-        <div className="api-section">
-          <h2>Backend API + MongoDB Test</h2>
-          {loading && <p>Loading Ryan's favorite number...</p>}
-          {error && <p className="error">Error: {error}</p>}
-          {favoriteNumber !== null && (
-            <div className="favorite-number">
-              <p>🎉 Ryan's favorite number is: <strong>{favoriteNumber}</strong></p>
-              {lastUpdated && (
-                <p className="last-updated">
-                  Last updated: {new Date(lastUpdated).toLocaleString()}
-                </p>
-              )}
-            </div>
-          )}
-          
-          <div className="update-section">
-            <h3>Update Favorite Number</h3>
-            <form onSubmit={updateFavoriteNumber} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
-              <Input
-                type="number"
-                label="New Favorite Number"
-                value={newNumber}
-                onChange={(e) => setNewNumber(e.target.value)}
-                placeholder="Enter a new favorite number"
-                min="1"
-                disabled={updating}
-                style={{ flex: 1 }}
-              />
-              <Button 
-                type="submit" 
-                variant="primary"
-                disabled={updating || !newNumber}
-                loading={updating}
-                style={{ marginBottom: '1rem' }}
-              >
-                Update Number
-              </Button>
-            </form>
-          </div>
-        </div>
-        
-        <p>
-          This React app is now connected to a Ruby on Rails backend with MongoDB!
-        </p>
-      </header>
+      <main>
+        <CardGallery 
+          title="Hockey Card Marketplace"
+          subtitle="Discover and collect amazing hockey cards from sellers around the world"
+          onCardClick={(card) => {
+            // TODO: Implement card detail view
+            console.log('Card clicked:', card)
+          }}
+          showFilters={true}
+        />
+      </main>
       
       {showLogin && (
         <LoginForm

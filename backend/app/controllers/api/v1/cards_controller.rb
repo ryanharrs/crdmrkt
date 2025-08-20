@@ -1,5 +1,5 @@
 class Api::V1::CardsController < ApplicationController
-  before_action :authenticate_request, except: [:index, :show]
+  before_action :authenticate_request, except: [:index, :show, :marketplace, :search]
   before_action :set_card, only: [:show, :update, :destroy]
   before_action :verify_card_owner, only: [:update, :destroy]
   
@@ -13,20 +13,24 @@ class Api::V1::CardsController < ApplicationController
     # Apply sorting
     @cards = apply_sorting(@cards)
     
-    # Apply pagination
+    # Apply pagination manually
     page = params[:page].to_i > 0 ? params[:page].to_i : 1
     per_page = [params[:per_page].to_i, 50].min
     per_page = 20 if per_page <= 0
     
-    @cards = @cards.page(page).per(per_page)
+    total_count = @cards.count
+    total_pages = (total_count / per_page.to_f).ceil
+    offset = (page - 1) * per_page
+    
+    @cards = @cards.skip(offset).limit(per_page)
     
     render json: {
       cards: @cards.map { |card| card.to_json_response },
       pagination: {
         current_page: page,
         per_page: per_page,
-        total_pages: @cards.total_pages,
-        total_count: @cards.total_count
+        total_pages: total_pages,
+        total_count: total_count
       }
     }
   end
@@ -103,20 +107,24 @@ class Api::V1::CardsController < ApplicationController
     @cards = apply_filters(@cards)
     @cards = apply_sorting(@cards)
     
-    # Apply pagination
+    # Apply pagination manually
     page = params[:page].to_i > 0 ? params[:page].to_i : 1
     per_page = [params[:per_page].to_i, 50].min
     per_page = 20 if per_page <= 0
     
-    @cards = @cards.page(page).per(per_page)
+    total_count = @cards.count
+    total_pages = (total_count / per_page.to_f).ceil
+    offset = (page - 1) * per_page
+    
+    @cards = @cards.skip(offset).limit(per_page)
     
     render json: {
       cards: @cards.map { |card| card.to_json_response },
       pagination: {
         current_page: page,
         per_page: per_page,
-        total_pages: @cards.total_pages,
-        total_count: @cards.total_count
+        total_pages: total_pages,
+        total_count: total_count
       }
     }
   end

@@ -23,6 +23,9 @@ services:
     environment:
       - RAILS_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/crdmrkt_development
+      - CLOUDINARY_CLOUD_NAME=djnfthhtq
+      - CLOUDINARY_API_KEY=913353734479547
+      - CLOUDINARY_API_SECRET=Pui4sZ26Sfwk7arydjDQCnWb2ME
     volumes:
       - ./backend:/app
       - /app/vendor/bundle
