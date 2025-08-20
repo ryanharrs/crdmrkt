@@ -18,15 +18,15 @@ const Card = ({
     const sizes = {
       sm: {
         width: '200px',
-        height: '280px'
+        height: '320px' // Increased to fit image + content
       },
       md: {
         width: '250px',
-        height: '350px'
+        height: '400px' // Increased to fit image + content
       },
       lg: {
         width: '300px',
-        height: '420px'
+        height: '480px' // Increased to fit image + content
       }
     }
     return sizes[size] || sizes.md
@@ -48,7 +48,7 @@ const Card = ({
 
   const imageContainerStyles = {
     position: 'relative',
-    flex: '1',
+    height: size === 'sm' ? '200px' : size === 'lg' ? '300px' : '250px',
     backgroundColor: theme.colors.neutral[50],
     display: 'flex',
     alignItems: 'center',
@@ -216,10 +216,7 @@ const Card = ({
         </div>
         
         <div style={cardDetailsStyles}>
-          {card.year} {card.manufacturer} {card.set_name}
-          <br />
-          #{card.card_number}
-          {card.team && ` • ${card.team}`}
+          {card.team && `${card.team} • `}{card.year}
         </div>
         
         {showPrice && card.for_sale && (
