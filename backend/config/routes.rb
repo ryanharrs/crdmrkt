@@ -15,12 +15,12 @@ Rails.application.routes.draw do
       resources :cards do
         member do
           post :toggle_sale
-          post :upload_image
         end
         collection do
           get :my_cards
           get :marketplace
           get :search
+          post :upload_image
         end
       end
       

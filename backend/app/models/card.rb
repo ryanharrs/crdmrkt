@@ -1,7 +1,6 @@
 class Card
   include Mongoid::Document
   include Mongoid::Timestamps
-  include CarrierWave::Mongoid
   
   # Core Card Information
   field :player_name, type: String
@@ -44,9 +43,10 @@ class Card
   field :card_stock, type: String         # "Base", "Chrome", "Refractor"
   field :foil_treatment, type: String     # "None", "Holofoil", "Prizm"
   
-  # Images & Media (CarrierWave + Cloudinary)
-  mount_uploader :front_image, ImageUploader
-  mount_uploader :back_image, ImageUploader
+  # Images & Media (Cloudinary URLs)
+  field :front_image_url, type: String
+  field :back_image_url, type: String
+  field :detail_image_urls, type: Array, default: [] # Array of additional image URLs
   
   # Ownership & Marketplace
   field :owner_id, type: BSON::ObjectId   # Reference to User who owns the card
@@ -95,7 +95,7 @@ class Card
     in: ["PSA", "BGS", "SGC", "KSA", "CSG"],
     allow_blank: true
   }
-  validates :front_image, presence: true
+  validates :front_image_url, presence: true, format: { with: URI::regexp(%w[http https]) }
   validates :estimated_value, :purchase_price, :asking_price, numericality: { greater_than_or_equal_to: 0 }, allow_blank: true
   validates :owner_id, presence: true
   
@@ -191,32 +191,25 @@ class Card
   end
 
   # Image helper methods
-  def front_image_url
-    front_image.present? ? front_image.url : read_attribute(:front_image_url)
-  end
-
-  def back_image_url
-    back_image.present? ? back_image.url : read_attribute(:back_image_url)
-  end
-
   def front_image_thumbnail_url
-    front_image.present? ? front_image.thumbnail.url : front_image_url
+    # For now, just return the main URL - we'll implement Cloudinary transformations later
+    front_image_url
   end
 
   def front_image_medium_url
-    front_image.present? ? front_image.medium.url : front_image_url
+    front_image_url
   end
 
   def front_image_large_url
-    front_image.present? ? front_image.large.url : front_image_url
+    front_image_url
   end
 
   def back_image_thumbnail_url
-    back_image.present? ? back_image.thumbnail.url : back_image_url
+    back_image_url
   end
 
   def has_images?
-    front_image.present? || front_image_url.present?
+    front_image_url.present?
   end
   
   def to_json_response(include_owner: false)

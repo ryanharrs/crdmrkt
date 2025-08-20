@@ -160,40 +160,81 @@ function App() {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
     const token = localStorage.getItem('auth_token')
     
-    // Create FormData for file upload
-    const formData = new FormData()
-    
-    // Add all text fields to FormData
-    Object.keys(cardData).forEach(key => {
-      if (key === 'front_image' || key === 'back_image') {
-        if (cardData[key]) {
-          formData.append(`card[${key}]`, cardData[key])
+    try {
+      // Step 1: Upload images to Cloudinary and get URLs
+      let frontImageUrl = ''
+      let backImageUrl = ''
+      
+      if (cardData.front_image) {
+        const frontImageFormData = new FormData()
+        frontImageFormData.append('image', cardData.front_image)
+        
+        const frontImageResponse = await fetch(`${apiUrl}/api/v1/cards/upload_image`, {
+          method: 'POST',
+          body: frontImageFormData
+        })
+        
+        if (!frontImageResponse.ok) {
+          throw new Error('Failed to upload front image')
         }
-      } else if (cardData[key] !== null && cardData[key] !== undefined && cardData[key] !== '') {
-        formData.append(`card[${key}]`, cardData[key])
+        
+        const frontImageData = await frontImageResponse.json()
+        frontImageUrl = frontImageData.image_url
       }
-    })
+      
+      if (cardData.back_image) {
+        const backImageFormData = new FormData()
+        backImageFormData.append('image', cardData.back_image)
+        
+        const backImageResponse = await fetch(`${apiUrl}/api/v1/cards/upload_image`, {
+          method: 'POST',
+          body: backImageFormData
+        })
+        
+        if (!backImageResponse.ok) {
+          throw new Error('Failed to upload back image')
+        }
+        
+        const backImageData = await backImageResponse.json()
+        backImageUrl = backImageData.image_url
+      }
+      
+      // Step 2: Create card with image URLs
+      const cardPayload = {
+        ...cardData,
+        front_image_url: frontImageUrl,
+        back_image_url: backImageUrl
+      }
+      
+      // Remove file objects from payload
+      delete cardPayload.front_image
+      delete cardPayload.back_image
 
-    const response = await fetch(`${apiUrl}/api/v1/cards`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    })
+      const response = await fetch(`${apiUrl}/api/v1/cards`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ card: cardPayload })
+      })
 
-    const data = await response.json()
+      const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to upload card')
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create card')
+      }
+
+      // If not adding another, close the modal
+      if (!addAnother) {
+        setShowCardUpload(false)
+      }
+
+      return data
+    } catch (error) {
+      console.error('Card upload error:', error)
+      throw error
     }
-
-    // If not adding another, close the modal
-    if (!addAnother) {
-      setShowCardUpload(false)
-    }
-
-    return data
   }
 
   if (authLoading) {

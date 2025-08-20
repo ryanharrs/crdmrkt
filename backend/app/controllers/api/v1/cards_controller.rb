@@ -1,5 +1,5 @@
 class Api::V1::CardsController < ApplicationController
-  before_action :authenticate_request, except: [:index, :show, :marketplace, :search]
+  before_action :authenticate_request, except: [:index, :show, :marketplace, :search, :upload_image]
   before_action :set_card, only: [:show, :update, :destroy]
   before_action :verify_card_owner, only: [:update, :destroy]
   
@@ -184,43 +184,31 @@ class Api::V1::CardsController < ApplicationController
     }
   end
 
-  # POST /api/v1/cards/:id/upload_image
+  # POST /api/v1/cards/upload_image - Upload image to Cloudinary and return URL
   def upload_image
-    @card = Card.find(params[:id])
-    
-    unless @card.owner_id == current_user.id
-      return render json: { error: 'Unauthorized' }, status: :unauthorized
-    end
-    
-    image_type = params[:image_type] # 'front' or 'back'
     image_file = params[:image]
     
     if image_file.blank?
       return render json: { error: 'No image file provided' }, status: :bad_request
     end
     
-    if !['front', 'back'].include?(image_type)
-      return render json: { error: 'Invalid image type. Must be "front" or "back"' }, status: :bad_request
-    end
-    
     begin
-      if image_type == 'front'
-        @card.front_image = image_file
-      else
-        @card.back_image = image_file
-      end
+      # Upload directly to Cloudinary
+      result = Cloudinary::Uploader.upload(
+        image_file.tempfile,
+        folder: "hockey_cards",
+        resource_type: "image",
+        transformation: [
+          { quality: "auto", fetch_format: "auto" },
+          { width: 800, height: 600, crop: "limit" }
+        ]
+      )
       
-      if @card.save
-        render json: {
-          message: "#{image_type.capitalize} image uploaded successfully",
-          card: @card.to_json_response
-        }
-      else
-        render json: {
-          error: 'Failed to upload image',
-          details: @card.errors.full_messages
-        }, status: :unprocessable_entity
-      end
+      render json: {
+        message: 'Image uploaded successfully',
+        image_url: result['secure_url'],
+        public_id: result['public_id']
+      }
     rescue => e
       render json: {
         error: 'Failed to upload image',
@@ -252,7 +240,7 @@ class Api::V1::CardsController < ApplicationController
       :condition, :graded, :grading_company, :grade,
       :rarity, :estimated_value, :purchase_price, :last_sold_price,
       :card_size, :card_stock, :foil_treatment,
-      :front_image, :back_image, :front_image_url, :back_image_url, 
+      :front_image_url, :back_image_url, 
       :for_sale, :asking_price, :price_negotiable, :trade_only,
       :acquired_date, :acquired_from, :pack_details,
       :description, :tags,
