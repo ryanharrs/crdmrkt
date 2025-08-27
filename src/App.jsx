@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 import './App.css'
 import './design-system/global.css'
 import { Button, Input, Navigation, CardUploadModal, CardGallery } from './design-system'
 import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
+import CardDetailPage from './components/CardDetailPage'
+import HomePage from './components/HomePage'
 
 function App() {
   const [favoriteNumber, setFavoriteNumber] = useState(null)
@@ -246,56 +249,60 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <Navigation 
-        user={user}
-        onLogin={() => setShowLogin(true)}
-        onLogout={handleLogout}
-        onUploadCards={() => setShowCardUpload(true)}
-      />
-      
-      <main>
-        <CardGallery 
-          title="Hockey Card Marketplace"
-          subtitle="Discover and collect amazing hockey cards from sellers around the world"
-          onCardClick={(card) => {
-            // TODO: Implement card detail view
-            console.log('Card clicked:', card)
-          }}
-          showFilters={true}
+    <Router>
+      <div className="App">
+        <Navigation 
+          user={user}
+          onLogin={() => setShowLogin(true)}
+          onLogout={handleLogout}
+          onUploadCards={() => setShowCardUpload(true)}
         />
-      </main>
-      
-      {showLogin && (
-        <LoginForm
-          onLogin={handleLogin}
-          onSwitchToSignup={() => {
-            setShowLogin(false)
-            setShowSignup(true)
-          }}
-          onClose={() => setShowLogin(false)}
-        />
-      )}
-      
-      {showSignup && (
-        <SignupForm
-          onSignup={handleSignup}
-          onSwitchToLogin={() => {
-            setShowSignup(false)
-            setShowLogin(true)
-          }}
-          onClose={() => setShowSignup(false)}
-        />
-      )}
+        
+        <main>
+          <Routes>
+            <Route 
+              path="/" 
+              element={<HomePage />} 
+            />
+            <Route 
+              path="/card/:cardId" 
+              element={<CardDetailPage />} 
+            />
+          </Routes>
+        </main>
+        
+        {/* Modals */}
+        {showLogin && (
+          <LoginForm
+            onLogin={handleLogin}
+            onSwitchToSignup={() => {
+              setShowLogin(false)
+              setShowSignup(true)
+            }}
+            onClose={() => setShowLogin(false)}
+          />
+        )}
+        
+        {showSignup && (
+          <SignupForm
+            onSignup={handleSignup}
+            onSwitchToLogin={() => {
+              setShowSignup(false)
+              setShowLogin(true)
+            }}
+            onClose={() => setShowSignup(false)}
+          />
+        )}
 
-      {showCardUpload && (
-        <CardUploadModal
-          isOpen={showCardUpload}
-          onClose={() => setShowCardUpload(false)}
-          onSubmit={handleCardUpload}
-        />
-      )}
-    </div>
+        {showCardUpload && (
+          <CardUploadModal
+            isOpen={showCardUpload}
+            onClose={() => setShowCardUpload(false)}
+            onSubmit={handleCardUpload}
+          />
+        )}
+      </div>
+    </Router>
   )
 }
 
