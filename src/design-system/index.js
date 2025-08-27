@@ -16,6 +16,7 @@ export { default as FileUpload } from './components/FileUpload'
 export { default as CardUploadModal } from './components/CardUploadModal'
 export { default as Card } from './components/Card'
 export { default as CardGallery } from './components/CardGallery'
+export { default as PaymentModal } from './components/PaymentModal'
 
 // Add more components here as you build them
 // export { default as Badge } from './components/Badge'

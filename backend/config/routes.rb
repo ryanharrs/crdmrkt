@@ -24,6 +24,14 @@ Rails.application.routes.draw do
         end
       end
       
+      # Payment routes
+      namespace :payments do
+        post :create_intent
+        post :webhook
+        post :create_connect_account
+        get :connect_status
+      end
+      
       # Ryan's favorite number routes
       get 'ryan/favorite_number', to: 'ryan#favorite_number'
       post 'ryan/favorite_number', to: 'ryan#update_favorite_number'

@@ -9,8 +9,14 @@ class User
   field :first_name, type: String
   field :last_name, type: String
   
+  # Stripe Connect fields
+  field :stripe_account_id, type: String
+  field :stripe_onboarding_completed, type: Boolean, default: false
+  
   # Relationships
   has_many :cards, class_name: 'Card', foreign_key: 'owner_id'
+  has_many :purchases_as_buyer, class_name: 'Purchase', foreign_key: 'buyer_id'
+  has_many :purchases_as_seller, class_name: 'Purchase', foreign_key: 'seller_id'
   
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: /\A[^@\s]+@[^@\s]+\z/ }

@@ -1,0 +1,14 @@
+[build]
+# Use our custom Dockerfile for Railway
+dockerfilePath = "Dockerfile.railway"
+
+[deploy]
+# Start command for the Rails application
+startCommand = "bundle exec rails server -b 0.0.0.0 -p $PORT"
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 300
+restartPolicyType = "on-failure"
+
+[environments.production]
+# Production-specific settings
+variables = { RAILS_ENV = "production" }

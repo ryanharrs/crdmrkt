@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { theme } from '../design-system/theme'
-import { Button } from '../design-system'
+import { Button, PaymentModal } from '../design-system'
 
 const CardDetailPage = () => {
   const { cardId } = useParams()
@@ -9,6 +9,7 @@ const CardDetailPage = () => {
   const [card, setCard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   const containerStyles = {
     maxWidth: '1200px',
@@ -197,9 +198,20 @@ const CardDetailPage = () => {
   }, [cardId])
 
   const handlePurchase = () => {
-    // TODO: Implement purchase functionality
-    console.log('Purchase card:', card.id)
-    alert('Purchase functionality coming soon!')
+    setShowPaymentModal(true)
+  }
+
+  const handlePaymentSuccess = (paymentIntent) => {
+    setShowPaymentModal(false)
+    // Show success message or redirect
+    alert('Payment successful! You now own this card.')
+    // Could redirect to a purchase confirmation page
+    navigate('/')
+  }
+
+  const handlePaymentError = (error) => {
+    console.error('Payment error:', error)
+    // Error is handled within the modal
   }
 
   const formatPrice = (price) => {
@@ -412,6 +424,17 @@ const CardDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && card && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          card={card}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+        />
+      )}
     </div>
   )
 }

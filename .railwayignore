@@ -1,0 +1,41 @@
+# Railway ignore file - prevents Railway from using cached/stale files
+
+# Frontend files (not needed for backend deployment)
+src/
+node_modules/
+package.json
+package-lock.json
+vite.config.js
+index.html
+Dockerfile.frontend
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+
+# Docker files (Railway has its own containerization)
+docker-compose.yml
+Dockerfile
+
+# Documentation
+README.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/

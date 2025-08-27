@@ -18,8 +18,7 @@ require "action_controller/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-# Require CarrierWave explicitly
-require 'carrierwave'
+# Require Cloudinary for image upload
 require 'cloudinary'
 
 module CrdmrktBackend
