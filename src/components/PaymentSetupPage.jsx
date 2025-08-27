@@ -6,7 +6,9 @@ import { Button } from '../design-system'
 const PaymentSetupPage = ({ user }) => {
   const navigate = useNavigate()
   const [stripeStatus, setStripeStatus] = useState('loading') // 'loading', 'not_connected', 'pending', 'active'
+  const [stripeDetails, setStripeDetails] = useState(null)
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [error, setError] = useState('')
 
   const containerStyles = {
@@ -185,6 +187,41 @@ const PaymentSetupPage = ({ user }) => {
     }
   }
 
+  const handleResetStripeAccount = async () => {
+    setIsResetting(true)
+    setError('')
+    
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const token = localStorage.getItem('auth_token')
+
+    try {
+      const response = await fetch(`${apiUrl}/api/v1/payments/reset_connect_account`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        // Reset local state
+        setStripeStatus('not_connected')
+        setStripeDetails(null)
+        setError('')
+        alert('Stripe account reset successfully! You can now set up a new account.')
+      } else {
+        setError(data.error || 'Failed to reset Stripe account')
+      }
+    } catch (err) {
+      console.error('Error resetting Stripe account:', err)
+      setError('Network error. Please try again.')
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
   const renderStatusIcon = (status) => {
     switch (status) {
       case 'active':
@@ -306,12 +343,30 @@ const PaymentSetupPage = ({ user }) => {
           )}
           
           {stripeStatus === 'pending' && (
-            <Button
-              variant="secondary"
-              onClick={checkStripeStatus}
-            >
-              Check Status
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                onClick={checkStripeStatus}
+              >
+                Check Status
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleCreateStripeAccount}
+                loading={isCreatingAccount}
+                disabled={isCreatingAccount}
+              >
+                Complete Setup
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleResetStripeAccount}
+                loading={isResetting}
+                disabled={isResetting}
+              >
+                {isResetting ? 'Resetting...' : 'Reset & Start Over'}
+              </Button>
+            </>
           )}
 
           <Button

@@ -225,11 +225,20 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     try {
       // Create payment intent on backend
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const token = localStorage.getItem('auth_token')
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      }
+      
+      // Add auth header if user is logged in (optional for guest purchases)
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
       const response = await fetch(`${apiUrl}/api/v1/payments/create_intent`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: JSON.stringify({
           card_id: card.id,
           amount: Math.round(fees.total * 100) // Convert to cents

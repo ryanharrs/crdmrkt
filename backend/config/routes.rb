@@ -29,6 +29,7 @@ Rails.application.routes.draw do
         post :create_intent
         post :webhook
         post :create_connect_account
+        delete :reset_connect_account
         get :connect_status
       end
       

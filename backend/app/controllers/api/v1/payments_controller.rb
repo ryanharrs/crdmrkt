@@ -1,5 +1,5 @@
 class Api::V1::PaymentsController < ApplicationController
-  before_action :authenticate_request, except: [:webhook]
+  before_action :authenticate_request, except: [:webhook, :create_intent]
 
   # POST /api/v1/payments/create_intent
   def create_intent
@@ -21,20 +21,38 @@ class Api::V1::PaymentsController < ApplicationController
       card_price_cents = (card.asking_price * 100).to_i
       platform_fee_cents = (card_price_cents * 0.05).to_i # 5% platform fee
       
-      # Create payment intent with application fee for marketplace
-      payment_intent = Stripe::PaymentIntent.create({
-        amount: amount,
-        currency: 'usd',
-        application_fee_amount: platform_fee_cents,
-        transfer_data: {
-          destination: card.owner.stripe_account_id # We'll add this field to User model
-        },
-        metadata: {
-          card_id: card.id.to_s,
-          buyer_id: current_user.id.to_s,
-          seller_id: card.owner_id.to_s
-        }
-      })
+      # For testing: Create a simple payment intent on platform account
+      # In production, you'd want to implement proper Connect flow
+      if Rails.env.development? || Rails.env.test?
+        # Simple payment intent for testing (funds go to platform, manual transfer needed)
+        payment_intent = Stripe::PaymentIntent.create({
+          amount: amount,
+          currency: 'usd',
+          metadata: {
+            card_id: card.id.to_s,
+            buyer_id: current_user&.id&.to_s || 'guest',
+            seller_id: card.owner_id.to_s,
+            seller_amount: (amount - platform_fee_cents).to_s,
+            platform_fee: platform_fee_cents.to_s
+          }
+        })
+      else
+        # Production: Proper Connect flow with destination charges
+        payment_intent = Stripe::PaymentIntent.create({
+          amount: amount,
+          currency: 'usd',
+          application_fee_amount: platform_fee_cents,
+          on_behalf_of: card.owner.stripe_account_id,
+          transfer_data: {
+            destination: card.owner.stripe_account_id
+          },
+          metadata: {
+            card_id: card.id.to_s,
+            buyer_id: current_user&.id&.to_s || 'guest',
+            seller_id: card.owner_id.to_s
+          }
+        })
+      end
 
       render json: {
         client_secret: payment_intent.client_secret
@@ -74,6 +92,21 @@ class Api::V1::PaymentsController < ApplicationController
     end
 
     render json: { received: true }
+  end
+
+  # DELETE /api/v1/payments/reset_connect_account
+  def reset_connect_account
+    begin
+      if current_user.stripe_account_id.present?
+        # Delete the existing Stripe account
+        Stripe::Account.delete(current_user.stripe_account_id)
+        current_user.update!(stripe_account_id: nil, stripe_onboarding_completed: false)
+      end
+      
+      render json: { message: 'Stripe account reset successfully' }
+    rescue Stripe::StripeError => e
+      render json: { error: e.message }, status: :bad_request
+    end
   end
 
   # POST /api/v1/payments/create_connect_account
@@ -153,6 +186,18 @@ class Api::V1::PaymentsController < ApplicationController
     # Mark card as sold
     card = Card.find(card_id)
     card.update!(for_sale: false)
+
+    # In development/test: Log that manual transfer is needed
+    if Rails.env.development? || Rails.env.test?
+      seller_amount = payment_intent['metadata']['seller_amount']
+      platform_fee = payment_intent['metadata']['platform_fee']
+      Rails.logger.info "=== PAYMENT SUCCESS (TEST MODE) ==="
+      Rails.logger.info "Card #{card_id} sold for $#{payment_intent['amount'] / 100.0}"
+      Rails.logger.info "Seller should receive: $#{seller_amount.to_f / 100.0}"
+      Rails.logger.info "Platform fee: $#{platform_fee.to_f / 100.0}"
+      Rails.logger.info "Manual transfer needed in test mode"
+      Rails.logger.info "================================="
+    end
 
     Rails.logger.info "Payment succeeded for card #{card_id}"
   end
