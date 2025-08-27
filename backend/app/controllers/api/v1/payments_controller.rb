@@ -7,10 +7,12 @@ class Api::V1::PaymentsController < ApplicationController
       card = Card.find(params[:card_id])
       amount = params[:amount].to_i # Amount in cents
       
-      # Validate card is for sale
+      # Validate card is for sale and not already purchased
       unless card.for_sale
         return render json: { error: 'Card is not for sale' }, status: :bad_request
       end
+
+
 
       # Validate seller has Stripe account
       unless card.owner.stripe_account_id.present?

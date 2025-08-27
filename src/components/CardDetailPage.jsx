@@ -409,9 +409,9 @@ const CardDetailPage = () => {
             </div>
           )}
 
-          {/* Purchase Button */}
-          {card.for_sale && (
-            <div style={{ marginTop: theme.spacing[8] }}>
+          {/* Purchase Button or Sold Status */}
+          <div style={{ marginTop: theme.spacing[8] }}>
+            {card.for_sale ? (
               <Button 
                 variant="primary" 
                 size="lg" 
@@ -420,8 +420,25 @@ const CardDetailPage = () => {
               >
                 Purchase Card
               </Button>
-            </div>
-          )}
+            ) : (
+              <div style={{
+                padding: theme.spacing[4],
+                backgroundColor: theme.colors.neutral[100],
+                borderRadius: theme.borderRadius.md,
+                textAlign: 'center',
+                border: `1px solid ${theme.colors.neutral[300]}`
+              }}>
+                <div style={{
+                  fontSize: theme.typography.fontSize.lg,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  color: theme.colors.neutral[600],
+                  fontFamily: theme.typography.fontFamily.sans.join(', ')
+                }}>
+                  This card has been sold
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

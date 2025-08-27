@@ -124,6 +124,7 @@ class Card
   
   # Scopes for common queries
   scope :for_sale, -> { where(for_sale: true) }
+  scope :sold, -> { where(for_sale: false) }
   scope :rookie_cards, -> { where(rookie_card: true) }
   scope :autographed, -> { where(autographed: true) }
   scope :graded, -> { where(graded: true) }
