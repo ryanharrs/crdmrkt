@@ -26,8 +26,8 @@ services:
       - CLOUDINARY_CLOUD_NAME=djnfthhtq
       - CLOUDINARY_API_KEY=913353734479547
       - CLOUDINARY_API_SECRET=Pui4sZ26Sfwk7arydjDQCnWb2ME
-      - STRIPE_SECRET_KEY=your_stripe_secret_key
-      - STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+      - STRIPE_SECRET_KEY=sk_test_PASTE_YOUR_SECRET_KEY_HERE
+      - STRIPE_WEBHOOK_SECRET=whsec_LEAVE_THIS_FOR_NOW
       - FRONTEND_URL=http://localhost:3000
     volumes:
       - ./backend:/app
@@ -52,7 +52,7 @@ services:
       - crdmrkt_network
     environment:
       - VITE_API_URL=http://localhost:3001
-      - VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+      - VITE_STRIPE_PUBLISHABLE_KEY=pk_test_PASTE_YOUR_PUBLISHABLE_KEY_HERE
 
 volumes:
   mongodb_data:

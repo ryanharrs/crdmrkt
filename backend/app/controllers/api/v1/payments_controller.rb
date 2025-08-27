@@ -1,6 +1,5 @@
 class Api::V1::PaymentsController < ApplicationController
   before_action :authenticate_request, except: [:webhook]
-  protect_from_forgery except: [:webhook]
 
   # POST /api/v1/payments/create_intent
   def create_intent
