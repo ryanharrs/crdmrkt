@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { theme } from '../theme'
 import Modal from './Modal'
@@ -13,6 +13,18 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
   const elements = useElements()
   const [processing, setProcessing] = useState(false)
   const [paymentError, setPaymentError] = useState('')
+  const [billingDetails, setBillingDetails] = useState({
+    name: '',
+    email: '',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'US'
+    }
+  })
 
   const containerStyles = {
     padding: theme.spacing[6]
@@ -78,11 +90,46 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     fontFamily: theme.typography.fontFamily.sans.join(', ')
   }
 
+  const inputStyles = {
+    padding: theme.spacing[3],
+    border: `1px solid ${theme.colors.neutral[300]}`,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.white,
+    fontSize: theme.typography.fontSize.base,
+    fontFamily: theme.typography.fontFamily.sans.join(', '),
+    color: theme.colors.neutral[900],
+    width: '100%',
+    ':focus': {
+      outline: 'none',
+      borderColor: theme.colors.primary[500],
+      boxShadow: `0 0 0 1px ${theme.colors.primary[500]}`
+    }
+  }
+
   const cardElementStyles = {
     padding: theme.spacing[4],
     border: `1px solid ${theme.colors.neutral[300]}`,
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.white
+  }
+
+  const inputRowStyles = {
+    display: 'flex',
+    gap: theme.spacing[3],
+    marginBottom: theme.spacing[4]
+  }
+
+  const inputColumnStyles = {
+    flex: 1
+  }
+
+  const labelStyles = {
+    display: 'block',
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.neutral[700],
+    marginBottom: theme.spacing[2],
+    fontFamily: theme.typography.fontFamily.sans.join(', ')
   }
 
   const errorStyles = {
@@ -145,6 +192,24 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
 
   const fees = calculateFees(card.asking_price)
 
+  const handleBillingChange = (field, value) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.')
+      setBillingDetails(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }))
+    } else {
+      setBillingDetails(prev => ({
+        ...prev,
+        [field]: value
+      }))
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
 
@@ -155,7 +220,7 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     setProcessing(true)
     setPaymentError('')
 
-    const cardElement = elements.getElement(CardElement)
+    const cardNumberElement = elements.getElement(CardNumberElement)
 
     try {
       // Create payment intent on backend
@@ -180,10 +245,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       // Confirm payment with Stripe
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: 'Card Buyer' // In real app, collect buyer info
-          }
+          card: cardNumberElement,
+          billing_details: billingDetails
         }
       })
 
@@ -243,28 +306,169 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {/* Billing Information */}
+        <div style={formSectionStyles}>
+          <h3 style={sectionTitleStyles}>Billing Information</h3>
+          
+          <div style={inputRowStyles}>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>Full Name</label>
+              <input
+                type="text"
+                style={inputStyles}
+                placeholder="John Doe"
+                value={billingDetails.name}
+                onChange={(e) => handleBillingChange('name', e.target.value)}
+                required
+              />
+            </div>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>Email</label>
+              <input
+                type="email"
+                style={inputStyles}
+                placeholder="john@example.com"
+                value={billingDetails.email}
+                onChange={(e) => handleBillingChange('email', e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: theme.spacing[4] }}>
+            <label style={labelStyles}>Address</label>
+            <input
+              type="text"
+              style={inputStyles}
+              placeholder="123 Main Street"
+              value={billingDetails.address.line1}
+              onChange={(e) => handleBillingChange('address.line1', e.target.value)}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: theme.spacing[4] }}>
+            <label style={labelStyles}>Address Line 2 (Optional)</label>
+            <input
+              type="text"
+              style={inputStyles}
+              placeholder="Apartment, suite, etc."
+              value={billingDetails.address.line2}
+              onChange={(e) => handleBillingChange('address.line2', e.target.value)}
+            />
+          </div>
+
+          <div style={inputRowStyles}>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>City</label>
+              <input
+                type="text"
+                style={inputStyles}
+                placeholder="San Francisco"
+                value={billingDetails.address.city}
+                onChange={(e) => handleBillingChange('address.city', e.target.value)}
+                required
+              />
+            </div>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>State</label>
+              <input
+                type="text"
+                style={inputStyles}
+                placeholder="CA"
+                value={billingDetails.address.state}
+                onChange={(e) => handleBillingChange('address.state', e.target.value)}
+                required
+              />
+            </div>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>ZIP Code</label>
+              <input
+                type="text"
+                style={inputStyles}
+                placeholder="94102"
+                value={billingDetails.address.postal_code}
+                onChange={(e) => handleBillingChange('address.postal_code', e.target.value)}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Payment Method */}
         <div style={formSectionStyles}>
           <h3 style={sectionTitleStyles}>Payment Method</h3>
-          <div style={cardElementStyles}>
-            <CardElement
-              options={{
-                style: {
-                  base: {
-                    fontSize: '16px',
-                    color: theme.colors.neutral[900],
-                    fontFamily: theme.typography.fontFamily.sans.join(', '),
-                    '::placeholder': {
-                      color: theme.colors.neutral[400],
+          
+          <div style={{ marginBottom: theme.spacing[4] }}>
+            <label style={labelStyles}>Card Number</label>
+            <div style={cardElementStyles}>
+              <CardNumberElement
+                options={{
+                  style: {
+                    base: {
+                      fontSize: '16px',
+                      color: theme.colors.neutral[900],
+                      fontFamily: theme.typography.fontFamily.sans.join(', '),
+                      '::placeholder': {
+                        color: theme.colors.neutral[400],
+                      },
+                    },
+                    invalid: {
+                      color: theme.colors.error[600],
                     },
                   },
-                  invalid: {
-                    color: theme.colors.error[600],
-                  },
-                },
-              }}
-            />
+                }}
+              />
+            </div>
           </div>
+
+          <div style={inputRowStyles}>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>Expiry Date</label>
+              <div style={cardElementStyles}>
+                <CardExpiryElement
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: theme.colors.neutral[900],
+                        fontFamily: theme.typography.fontFamily.sans.join(', '),
+                        '::placeholder': {
+                          color: theme.colors.neutral[400],
+                        },
+                      },
+                      invalid: {
+                        color: theme.colors.error[600],
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+            <div style={inputColumnStyles}>
+              <label style={labelStyles}>Security Code</label>
+              <div style={cardElementStyles}>
+                <CardCvcElement
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: theme.colors.neutral[900],
+                        fontFamily: theme.typography.fontFamily.sans.join(', '),
+                        '::placeholder': {
+                          color: theme.colors.neutral[400],
+                        },
+                      },
+                      invalid: {
+                        color: theme.colors.error[600],
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
           {paymentError && (
             <div style={errorStyles}>
               {paymentError}

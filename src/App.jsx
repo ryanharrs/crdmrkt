@@ -7,6 +7,7 @@ import LoginForm from './components/LoginForm'
 import SignupForm from './components/SignupForm'
 import CardDetailPage from './components/CardDetailPage'
 import HomePage from './components/HomePage'
+import PaymentSetupPage from './components/PaymentSetupPage'
 
 function App() {
   const [favoriteNumber, setFavoriteNumber] = useState(null)
@@ -159,6 +160,11 @@ function App() {
     setUser(null)
   }
 
+  const handlePaymentSetup = () => {
+    // This will be handled by React Router navigation
+    window.location.href = '/payment-setup'
+  }
+
   const handleCardUpload = async (cardData, addAnother = false) => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
     const token = localStorage.getItem('auth_token')
@@ -256,6 +262,7 @@ function App() {
           onLogin={() => setShowLogin(true)}
           onLogout={handleLogout}
           onUploadCards={() => setShowCardUpload(true)}
+          onPaymentSetup={handlePaymentSetup}
         />
         
         <main>
@@ -267,6 +274,10 @@ function App() {
             <Route 
               path="/card/:cardId" 
               element={<CardDetailPage />} 
+            />
+            <Route 
+              path="/payment-setup" 
+              element={<PaymentSetupPage user={user} />} 
             />
           </Routes>
         </main>

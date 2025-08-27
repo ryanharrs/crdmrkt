@@ -12,6 +12,11 @@ class Api::V1::PaymentsController < ApplicationController
         return render json: { error: 'Card is not for sale' }, status: :bad_request
       end
 
+      # Validate seller has Stripe account
+      unless card.owner.stripe_account_id.present?
+        return render json: { error: 'Seller has not set up payment processing yet' }, status: :bad_request
+      end
+
       # Calculate fees
       card_price_cents = (card.asking_price * 100).to_i
       platform_fee_cents = (card_price_cents * 0.05).to_i # 5% platform fee
@@ -91,8 +96,8 @@ class Api::V1::PaymentsController < ApplicationController
       # Create account link for onboarding
       account_link = Stripe::AccountLink.create({
         account: account.id,
-        refresh_url: "#{ENV['FRONTEND_URL']}/seller/stripe/refresh",
-        return_url: "#{ENV['FRONTEND_URL']}/seller/stripe/return",
+        refresh_url: "#{ENV['FRONTEND_URL']}/payment-setup?refresh=true",
+        return_url: "#{ENV['FRONTEND_URL']}/payment-setup?success=true",
         type: 'account_onboarding'
       })
 

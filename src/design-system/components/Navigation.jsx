@@ -2,12 +2,14 @@ import { theme } from '../theme'
 import Button from './Button'
 import Dropdown from './Dropdown'
 import DropdownItem from './DropdownItem'
+import UserDropdown from './UserDropdown'
 
 const Navigation = ({ 
   user, 
   onLogin, 
   onLogout,
   onUploadCards,
+  onPaymentSetup,
   className = '',
   ...props 
 }) => {
@@ -127,14 +129,11 @@ const Navigation = ({
       
       <div style={rightSectionStyles}>
         {user ? (
-          <div style={userMenuStyles}>
-            <span style={welcomeTextStyles}>
-              Welcome, {user.first_name}!
-            </span>
-            <Button variant="secondary" size="sm" onClick={onLogout}>
-              Logout
-            </Button>
-          </div>
+          <UserDropdown 
+            user={user}
+            onPaymentSetup={onPaymentSetup}
+            onLogout={onLogout}
+          />
         ) : (
           <Button variant="primary" size="sm" onClick={onLogin}>
             Log In
