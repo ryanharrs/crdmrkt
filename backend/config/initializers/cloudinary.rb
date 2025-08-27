@@ -7,5 +7,4 @@ Cloudinary.config do |config|
   config.cdn_subdomain = true
 end
 
-# CarrierWave configuration
-# Note: When using Cloudinary::CarrierWave, storage is handled automatically
+# Direct Cloudinary API usage for image uploads

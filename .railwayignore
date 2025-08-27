@@ -1,13 +1,15 @@
-# Railway ignore file - prevents Railway from using cached/stale files
+# Railway ignore file for BACKEND service only
+# If deploying frontend, don't use this file
 
-# Frontend files (not needed for backend deployment)
-src/
-node_modules/
-package.json
-package-lock.json
-vite.config.js
-index.html
-Dockerfile.frontend
+# Backend-specific ignores (only use when deploying backend)
+# Uncomment these lines ONLY for backend service deployment:
+# src/
+# node_modules/
+# package.json
+# package-lock.json
+# vite.config.js
+# index.html
+# Dockerfile.frontend
 
 # Development files
 .env
