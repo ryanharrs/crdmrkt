@@ -1,6 +1,8 @@
 [build]
 # Use our custom Dockerfile for Railway
 dockerfilePath = "Dockerfile.railway"
+# Force fresh builds to avoid gem cache issues
+buildCommand = "echo 'Building with fresh gems...'"
 
 [deploy]
 # Start command for the Rails application
