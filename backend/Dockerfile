@@ -17,10 +17,12 @@ WORKDIR /app
 # Copy gem files first (for better Docker layer caching)
 COPY Gemfile Gemfile.lock ./
 
-# Clear bundler cache and install gems fresh
-RUN bundle config set --local deployment 'false' && \
+# Update Bundler and clear cache to prevent version conflicts
+RUN gem update --system && \
+    gem install bundler && \
+    bundle config set --local deployment 'false' && \
     bundle config set --local without 'development test' && \
-    rm -rf vendor/bundle .bundle && \
+    rm -rf vendor/bundle .bundle Gemfile.lock && \
     bundle install --jobs 4 --retry 3
 
 # Copy the rest of the application
