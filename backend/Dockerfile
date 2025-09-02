@@ -9,13 +9,14 @@ RUN apk add --no-cache \
     curl \
     vips-dev \
     vips-tools \
-    tzdata
+    tzdata \
+    yaml-dev
 
 # Set working directory
 WORKDIR /app
 
-# Copy gem files
-COPY Gemfile Gemfile.lock ./
+    # Copy gem files
+    COPY Gemfile Gemfile.lock ./
 
 # Install gems (let Railway handle bundler version automatically)
 RUN bundle config set --local without 'development test' && \
