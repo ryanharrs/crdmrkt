@@ -14,16 +14,12 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /app
 
-# Copy only Gemfile first (we'll regenerate Gemfile.lock)
-COPY Gemfile ./
+# Copy gem files
+COPY Gemfile Gemfile.lock ./
 
-# Update Bundler and install gems fresh to avoid version conflicts
-RUN gem update --system && \
-    gem install bundler && \
-    bundle config set --local deployment 'false' && \
-    bundle config set --local without 'development test' && \
-    rm -rf vendor/bundle .bundle && \
-    bundle install --jobs 4 --retry 3
+# Install gems (let Railway handle bundler version automatically)
+RUN bundle config set --local without 'development test' && \
+    bundle install --retry 3
 
 # Copy the rest of the application
 COPY . .
