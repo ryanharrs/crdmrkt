@@ -1,5 +1,5 @@
 # Railway-specific Dockerfile for Ruby on Rails backend
-FROM ruby:3.3-alpine
+FROM ruby:3.3.9-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
