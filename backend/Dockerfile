@@ -1,19 +1,36 @@
-FROM ruby:3.3.1
+# Railway-specific Dockerfile for Ruby on Rails backend
+FROM ruby:3.3-alpine
 
+# Install system dependencies
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev \
+    git \
+    curl \
+    vips-dev \
+    vips-tools \
+    tzdata
+
+# Set working directory
 WORKDIR /app
 
-# Install dependencies
-RUN apt-get update -qq && apt-get install -y nodejs npm
+# Copy backend files only
+COPY backend/Gemfile backend/Gemfile.lock ./
 
-# Install Rails first
-RUN gem install rails -v '~> 7.1.0'
+# Clear bundler cache and install gems fresh
+RUN bundle config set --local deployment 'false' && \
+    bundle config set --local without 'development test' && \
+    rm -rf vendor/bundle .bundle && \
+    bundle install --jobs 4 --retry 3
 
-# Copy Gemfile and generate new Gemfile.lock
-COPY Gemfile ./
-RUN bundle install
+# Copy the rest of the backend application
+COPY backend/ .
 
-# Copy the rest of the application
-COPY . .
+# Precompile assets (if any)
+# RUN bundle exec rails assets:precompile
 
-# Create Rails app structure if it doesn't exist, then start server
-CMD ["sh", "-c", "if [ ! -f config/application.rb ]; then rails new . --api --skip-git --force; fi && bundle install && rails server -b 0.0.0.0 -p 3001"]
+# Expose port
+EXPOSE 3001
+
+# Start the Rails server
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3001"]
