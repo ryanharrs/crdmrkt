@@ -14,8 +14,8 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /app
 
-# Copy backend files only
-COPY backend/Gemfile backend/Gemfile.lock ./
+# Copy gem files first (for better Docker layer caching)
+COPY Gemfile Gemfile.lock ./
 
 # Clear bundler cache and install gems fresh
 RUN bundle config set --local deployment 'false' && \
@@ -23,8 +23,8 @@ RUN bundle config set --local deployment 'false' && \
     rm -rf vendor/bundle .bundle && \
     bundle install --jobs 4 --retry 3
 
-# Copy the rest of the backend application
-COPY backend/ .
+# Copy the rest of the application
+COPY . .
 
 # Precompile assets (if any)
 # RUN bundle exec rails assets:precompile
