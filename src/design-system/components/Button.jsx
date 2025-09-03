@@ -5,7 +5,7 @@ const Button = ({
   children,
   onClick,
   type = 'button',
-  variant = 'primary', // 'primary', 'secondary', 'outline', 'ghost', 'danger'
+  variant = 'primary', // 'primary', 'secondary', 'outline', 'ghost', 'error'
   size = 'md', // 'sm', 'md', 'lg'
   disabled = false,
   loading = false,
@@ -40,7 +40,9 @@ const Button = ({
         normal: {
           backgroundColor: theme.colors.white,
           color: theme.colors.neutral[700],
-          border: `1px solid ${theme.colors.border}`,
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: theme.colors.border,
           boxShadow: theme.shadows.sm,
           transform: 'translateY(0)',
         },
@@ -55,7 +57,9 @@ const Button = ({
         normal: {
           backgroundColor: 'transparent',
           color: theme.colors.primary[600],
-          border: `1px solid ${theme.colors.primary[300]}`,
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: theme.colors.primary[300],
           transform: 'translateY(0)',
         },
         hover: {
@@ -78,7 +82,7 @@ const Button = ({
           color: theme.colors.neutral[700],
         }
       },
-      danger: {
+      error: {
         normal: {
           background: `linear-gradient(135deg, ${theme.colors.error[500]} 0%, ${theme.colors.error[600]} 100%)`,
           color: theme.colors.white,
