@@ -3,7 +3,7 @@ import { theme } from '../theme'
 import Dropdown from './Dropdown'
 import DropdownItem from './DropdownItem'
 
-const UserDropdown = ({ user, onPaymentSetup, onLogout }) => {
+const UserDropdown = ({ user, onPaymentSetup, onDeliverySetup, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   const triggerStyles = {
@@ -56,6 +56,11 @@ const UserDropdown = ({ user, onPaymentSetup, onLogout }) => {
     onPaymentSetup()
   }
 
+  const handleDeliverySetup = () => {
+    setIsOpen(false)
+    onDeliverySetup()
+  }
+
   const handleLogout = () => {
     setIsOpen(false)
     onLogout()
@@ -83,6 +88,16 @@ const UserDropdown = ({ user, onPaymentSetup, onLogout }) => {
             <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
           </svg>
           Set up Payment Info
+        </div>
+      </DropdownItem>
+      
+      <DropdownItem onClick={handleDeliverySetup}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing[2] }}>
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" clipRule="evenodd" />
+            <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-.293-.707L15 4.586A1 1 0 0014.414 4H14v3z" />
+          </svg>
+          Set up Delivery Options
         </div>
       </DropdownItem>
       

@@ -17,6 +17,7 @@ class User
   has_many :cards, class_name: 'Card', foreign_key: 'owner_id'
   has_many :purchases_as_buyer, class_name: 'Purchase', foreign_key: 'buyer_id'
   has_many :purchases_as_seller, class_name: 'Purchase', foreign_key: 'seller_id'
+  has_many :delivery_options, class_name: 'DeliveryOption', foreign_key: 'seller_id', dependent: :destroy
   
   # Validations
   validates :email, presence: true, uniqueness: true, format: { with: /\A[^@\s]+@[^@\s]+\z/ }

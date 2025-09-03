@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { theme } from '../theme'
 import Button from './Button'
 import Dropdown from './Dropdown'
@@ -10,6 +11,7 @@ const Navigation = ({
   onLogout,
   onUploadCards,
   onPaymentSetup,
+  onDeliverySetup,
   className = '',
   ...props 
 }) => {
@@ -34,7 +36,12 @@ const Navigation = ({
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.primary[600],
     textDecoration: 'none',
-    margin: 0
+    margin: 0,
+    cursor: 'pointer',
+    transition: `color ${theme.animation.duration.fast} ${theme.animation.easing.easeInOut}`,
+    ':hover': {
+      color: theme.colors.primary[700]
+    }
   }
 
   const navLinksStyles = {
@@ -104,7 +111,9 @@ const Navigation = ({
   return (
     <nav style={navStyles} className={className} {...props}>
       <div style={leftSectionStyles}>
-        <h1 style={logoStyles}>CrdMrkt</h1>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <h1 style={logoStyles}>CrdMrkt</h1>
+        </Link>
         
         {user && (
           <div style={navLinksStyles}>
@@ -132,6 +141,7 @@ const Navigation = ({
           <UserDropdown 
             user={user}
             onPaymentSetup={onPaymentSetup}
+            onDeliverySetup={onDeliverySetup}
             onLogout={onLogout}
           />
         ) : (

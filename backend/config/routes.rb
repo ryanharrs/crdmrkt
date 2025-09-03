@@ -24,6 +24,13 @@ Rails.application.routes.draw do
         end
       end
       
+      # Delivery options routes
+      resources :delivery_options do
+        collection do
+          get 'for_seller/:seller_id', action: :for_seller, as: :for_seller
+        end
+      end
+      
       # Payment routes
       namespace :payments do
         post :create_intent
