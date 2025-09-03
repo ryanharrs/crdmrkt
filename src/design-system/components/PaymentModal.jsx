@@ -270,9 +270,12 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       } else if (paymentIntent.status === 'succeeded') {
         // For local development: manually confirm payment since webhooks don't work
         // In production, this is handled by webhooks
-        const isLocalDev = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')
+        const isLocalDev = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1') || apiUrl.includes('3001')
+        
+        console.log('Payment success - API URL:', apiUrl, 'Is Local Dev:', isLocalDev)
         
         if (isLocalDev) {
+          console.log('Local dev detected - calling confirm_payment endpoint')
           try {
             await fetch(`${apiUrl}/api/v1/payments/confirm_payment`, {
               method: 'POST',
@@ -284,6 +287,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
           } catch (confirmError) {
             console.warn('Payment confirmation failed (this is expected in local dev):', confirmError.message)
           }
+        } else {
+          console.log('Production detected - relying on webhooks, no manual confirmation')
         }
         
         onSuccess(paymentIntent)
