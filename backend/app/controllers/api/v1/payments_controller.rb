@@ -73,12 +73,20 @@ class Api::V1::PaymentsController < ApplicationController
     sig_header = request.env['HTTP_STRIPE_SIGNATURE']
     endpoint_secret = ENV['STRIPE_WEBHOOK_SECRET']
 
+    Rails.logger.info "=== WEBHOOK RECEIVED ==="
+    Rails.logger.info "Signature header present: #{sig_header.present?}"
+    Rails.logger.info "Webhook secret configured: #{endpoint_secret.present?}"
+
     begin
       event = Stripe::Webhook.construct_event(payload, sig_header, endpoint_secret)
-    rescue JSON::ParserError
+      Rails.logger.info "Webhook event type: #{event['type']}"
+      Rails.logger.info "Webhook event ID: #{event['id']}"
+    rescue JSON::ParserError => e
+      Rails.logger.error "Webhook JSON parse error: #{e.message}"
       render json: { error: 'Invalid payload' }, status: :bad_request
       return
-    rescue Stripe::SignatureVerificationError
+    rescue Stripe::SignatureVerificationError => e
+      Rails.logger.error "Webhook signature verification failed: #{e.message}"
       render json: { error: 'Invalid signature' }, status: :bad_request
       return
     end
@@ -86,13 +94,16 @@ class Api::V1::PaymentsController < ApplicationController
     # Handle the event
     case event['type']
     when 'payment_intent.succeeded'
+      Rails.logger.info "Processing payment_intent.succeeded for: #{event['data']['object']['id']}"
       handle_payment_success(event['data']['object'])
     when 'payment_intent.payment_failed'
+      Rails.logger.info "Processing payment_intent.payment_failed for: #{event['data']['object']['id']}"
       handle_payment_failed(event['data']['object'])
     else
       Rails.logger.info "Unhandled event type: #{event['type']}"
     end
 
+    Rails.logger.info "=== WEBHOOK COMPLETED ==="
     render json: { received: true }
   end
 

@@ -270,17 +270,20 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       } else if (paymentIntent.status === 'succeeded') {
         // For local development: manually confirm payment since webhooks don't work
         // In production, this is handled by webhooks
-        // todo remove this try catch block once we go to production
-        try {
-          await fetch(`${apiUrl}/api/v1/payments/confirm_payment`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-              payment_intent_id: paymentIntent.id
+        const isLocalDev = apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')
+        
+        if (isLocalDev) {
+          try {
+            await fetch(`${apiUrl}/api/v1/payments/confirm_payment`, {
+              method: 'POST',
+              headers: headers,
+              body: JSON.stringify({
+                payment_intent_id: paymentIntent.id
+              })
             })
-          })
-        } catch (confirmError) {
-          console.warn('Payment confirmation failed (this is expected in local dev):', confirmError.message)
+          } catch (confirmError) {
+            console.warn('Payment confirmation failed (this is expected in local dev):', confirmError.message)
+          }
         }
         
         onSuccess(paymentIntent)
