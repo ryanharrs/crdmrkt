@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { theme } from '../theme'
@@ -19,6 +19,9 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
   const elements = useElements()
   const [processing, setProcessing] = useState(false)
   const [paymentError, setPaymentError] = useState('')
+  const [deliveryOptions, setDeliveryOptions] = useState([])
+  const [selectedDeliveryOption, setSelectedDeliveryOption] = useState(null)
+  const [loadingDeliveryOptions, setLoadingDeliveryOptions] = useState(true)
   const [billingDetails, setBillingDetails] = useState({
     name: '',
     email: '',
@@ -180,15 +183,19 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     return `$${parseFloat(price).toFixed(2)}`
   }
 
-  const calculateFees = (price) => {
+  const calculateFees = (price, deliveryCost = 0) => {
     const cardPrice = parseFloat(price)
-    const stripeFee = Math.round((cardPrice * 0.029 + 0.30) * 100) / 100 // 2.9% + 30¢
-    const platformFee = Math.round(cardPrice * 0.05 * 100) / 100 // 5% platform fee
-    const total = cardPrice + stripeFee + platformFee
-    const sellerReceives = cardPrice - platformFee
+    const deliveryPrice = parseFloat(deliveryCost) || 0
+    const subtotal = cardPrice + deliveryPrice
+    const stripeFee = Math.round((subtotal * 0.029 + 0.30) * 100) / 100 // 2.9% + 30¢ on total including delivery
+    const platformFee = Math.round(cardPrice * 0.05 * 100) / 100 // 5% platform fee on card price only
+    const total = subtotal + stripeFee + platformFee
+    const sellerReceives = cardPrice - platformFee + deliveryPrice // Seller gets card price - platform fee + full delivery cost
 
     return {
       cardPrice,
+      deliveryCost: deliveryPrice,
+      subtotal,
       stripeFee,
       platformFee,
       total,
@@ -196,7 +203,39 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     }
   }
 
-  const fees = calculateFees(card.asking_price)
+  const fees = calculateFees(card.asking_price, selectedDeliveryOption?.price || 0)
+
+  // Fetch delivery options when component mounts
+  useEffect(() => {
+    const fetchDeliveryOptions = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        const response = await fetch(`${apiUrl}/api/v1/delivery_options/for_seller/${card.owner_id}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setDeliveryOptions(data.delivery_options)
+          
+          // Auto-select the first (cheapest) option if available
+          if (data.delivery_options.length > 0) {
+            setSelectedDeliveryOption(data.delivery_options[0])
+          }
+        } else {
+          console.error('Failed to fetch delivery options, status:', response.status)
+        }
+      } catch (error) {
+        console.error('Failed to fetch delivery options:', error)
+      } finally {
+        setLoadingDeliveryOptions(false)
+      }
+    }
+
+    if (card?.owner_id) {
+      fetchDeliveryOptions()
+    } else {
+      setLoadingDeliveryOptions(false)
+    }
+  }, [card?.owner_id])
 
   const handleBillingChange = (field, value) => {
     if (field.includes('.')) {
@@ -323,12 +362,116 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
         </div>
       </div>
 
+      {/* Delivery Options */}
+      {loadingDeliveryOptions ? (
+        <div style={{ 
+          padding: theme.spacing[4], 
+          textAlign: 'center',
+          color: theme.colors.neutral[600],
+          fontSize: theme.typography.fontSize.sm,
+          backgroundColor: theme.colors.neutral[50],
+          borderRadius: theme.borderRadius.md,
+          border: `1px solid ${theme.colors.neutral[200]}`,
+          marginBottom: theme.spacing[4]
+        }}>
+          Loading delivery options...
+        </div>
+      ) : deliveryOptions.length === 0 ? (
+        <div style={{
+          padding: theme.spacing[4],
+          backgroundColor: theme.colors.neutral[50],
+          borderRadius: theme.borderRadius.md,
+          border: `1px solid ${theme.colors.neutral[200]}`,
+          textAlign: 'center',
+          marginBottom: theme.spacing[4]
+        }}>
+          <p style={{
+            fontSize: theme.typography.fontSize.sm,
+            color: theme.colors.neutral[600],
+            margin: 0
+          }}>
+            No delivery options available for this seller.
+          </p>
+        </div>
+      ) : (
+        <div style={{ marginBottom: theme.spacing[4] }}>
+          <h3 style={{
+            fontSize: theme.typography.fontSize.lg,
+            fontWeight: theme.typography.fontWeight.semibold,
+            color: theme.colors.neutral[900],
+            marginBottom: theme.spacing[3],
+            marginTop: 0
+          }}>
+            Select Delivery Option
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing[3] }}>
+            {deliveryOptions.map((option) => (
+              <label
+                key={option.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: theme.spacing[4],
+                  backgroundColor: selectedDeliveryOption?.id === option.id 
+                    ? theme.colors.primary[50] 
+                    : theme.colors.white,
+                  border: selectedDeliveryOption?.id === option.id 
+                    ? `2px solid ${theme.colors.primary[500]}` 
+                    : `1px solid ${theme.colors.neutral[200]}`,
+                  borderRadius: theme.borderRadius.md,
+                  cursor: 'pointer',
+                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.easeInOut}`
+                }}
+              >
+                <input
+                  type="radio"
+                  name="deliveryOption"
+                  value={option.id}
+                  checked={selectedDeliveryOption?.id === option.id}
+                  onChange={() => setSelectedDeliveryOption(option)}
+                  style={{ marginRight: theme.spacing[3] }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: theme.typography.fontSize.base,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    color: theme.colors.neutral[900],
+                    marginBottom: theme.spacing[1]
+                  }}>
+                    {option.name}
+                  </div>
+                  <div style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.neutral[600]
+                  }}>
+                    {option.duration}
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: theme.typography.fontSize.lg,
+                  fontWeight: theme.typography.fontWeight.semibold,
+                  color: theme.colors.primary[600]
+                }}>
+                  {formatPrice(option.price)}
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Fee Breakdown */}
       <div style={feeInfoStyles}>
         <div style={feeRowStyles}>
           <span>Card Price:</span>
           <span>{formatPrice(fees.cardPrice)}</span>
         </div>
+        {selectedDeliveryOption && (
+          <div style={feeRowStyles}>
+            <span>Delivery ({selectedDeliveryOption.name}):</span>
+            <span>{formatPrice(fees.deliveryCost)}</span>
+          </div>
+        )}
         <div style={feeRowStyles}>
           <span>Processing Fee:</span>
           <span>{formatPrice(fees.stripeFee)}</span>
@@ -550,7 +693,7 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
           <Button 
             type="submit" 
             variant="primary"
-            disabled={!stripe || processing}
+            disabled={!stripe || processing || (deliveryOptions.length > 0 && !selectedDeliveryOption)}
             loading={processing}
           >
             {processing ? 'Processing...' : `Pay ${formatPrice(fees.total)}`}

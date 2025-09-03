@@ -244,6 +244,7 @@ class Card
       display_name: display_name,
       full_card_name: full_card_name,
       condition_grade_display: condition_grade_display,
+      owner_id: owner_id.to_s,
       created_at: created_at,
       updated_at: updated_at
     }

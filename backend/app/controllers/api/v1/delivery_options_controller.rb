@@ -1,5 +1,5 @@
 class Api::V1::DeliveryOptionsController < ApplicationController
-  before_action :authenticate_request
+  before_action :authenticate_request, except: [:for_seller]
   before_action :set_delivery_option, only: [:show, :update, :destroy]
 
   # GET /api/v1/delivery_options - Get current user's delivery options
