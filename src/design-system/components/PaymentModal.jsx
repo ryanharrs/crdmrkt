@@ -28,7 +28,7 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       city: '',
       state: '',
       postal_code: '',
-      country: 'US'
+      country: 'CA'
     }
   })
 
@@ -268,6 +268,21 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       if (stripeError) {
         setPaymentError(stripeError.message)
       } else if (paymentIntent.status === 'succeeded') {
+        // For local development: manually confirm payment since webhooks don't work
+        // In production, this is handled by webhooks
+        // todo remove this try catch block once we go to production
+        try {
+          await fetch(`${apiUrl}/api/v1/payments/confirm_payment`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+              payment_intent_id: paymentIntent.id
+            })
+          })
+        } catch (confirmError) {
+          console.warn('Payment confirmation failed (this is expected in local dev):', confirmError.message)
+        }
+        
         onSuccess(paymentIntent)
       }
     } catch (error) {
@@ -379,34 +394,58 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
               <input
                 type="text"
                 style={inputStyles}
-                placeholder="San Francisco"
+                placeholder="Toronto"
                 value={billingDetails.address.city}
                 onChange={(e) => handleBillingChange('address.city', e.target.value)}
                 required
               />
             </div>
             <div style={inputColumnStyles}>
-              <label style={labelStyles}>State</label>
+              <label style={labelStyles}>Province/State</label>
               <input
                 type="text"
                 style={inputStyles}
-                placeholder="CA"
+                placeholder="ON"
                 value={billingDetails.address.state}
                 onChange={(e) => handleBillingChange('address.state', e.target.value)}
                 required
               />
             </div>
             <div style={inputColumnStyles}>
-              <label style={labelStyles}>ZIP Code</label>
+              <label style={labelStyles}>Postal Code</label>
               <input
                 type="text"
                 style={inputStyles}
-                placeholder="94102"
+                placeholder="M5V 3A8"
                 value={billingDetails.address.postal_code}
                 onChange={(e) => handleBillingChange('address.postal_code', e.target.value)}
                 required
               />
             </div>
+          </div>
+
+          <div style={{ marginBottom: theme.spacing[4] }}>
+            <label style={labelStyles}>Country</label>
+            <select
+              style={inputStyles}
+              value={billingDetails.address.country}
+              onChange={(e) => handleBillingChange('address.country', e.target.value)}
+              required
+            >
+              <option value="CA">Canada</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AU">Australia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="JP">Japan</option>
+              <option value="BR">Brazil</option>
+              <option value="MX">Mexico</option>
+              <option value="NL">Netherlands</option>
+              <option value="SE">Sweden</option>
+              <option value="IT">Italy</option>
+              <option value="ES">Spain</option>
+            </select>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ class Purchase
 
   # Relationships
   belongs_to :card, class_name: 'Card', foreign_key: 'card_id'
-  belongs_to :seller, class_name: 'User', foreign_key: 'seller_id'
+  belongs_to :seller, class_name: 'User', foreign_key: 'seller_id', inverse_of: :purchases_as_seller
 
   # Validations
   validates :amount, presence: true, numericality: { greater_than: 0 }

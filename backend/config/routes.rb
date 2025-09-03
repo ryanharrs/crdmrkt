@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       namespace :payments do
         post :create_intent
         post :webhook
+        post :confirm_payment
         post :create_connect_account
         delete :reset_connect_account
         get :connect_status

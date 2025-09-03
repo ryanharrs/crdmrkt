@@ -1,5 +1,5 @@
 class Api::V1::PaymentsController < ApplicationController
-  before_action :authenticate_request, except: [:webhook, :create_intent]
+  before_action :authenticate_request, except: [:webhook, :create_intent, :confirm_payment]
 
   # POST /api/v1/payments/create_intent
   def create_intent
@@ -94,6 +94,29 @@ class Api::V1::PaymentsController < ApplicationController
     end
 
     render json: { received: true }
+  end
+
+  # POST /api/v1/payments/confirm_payment (for local development when webhooks don't work)
+  def confirm_payment
+    begin
+      payment_intent_id = params[:payment_intent_id]
+      
+      # Retrieve the payment intent from Stripe to verify it succeeded
+      payment_intent = Stripe::PaymentIntent.retrieve(payment_intent_id)
+      
+      if payment_intent.status == 'succeeded'
+        handle_payment_success(payment_intent)
+        render json: { message: 'Payment confirmed and card marked as sold' }
+      else
+        render json: { error: 'Payment not succeeded yet' }, status: :bad_request
+      end
+      
+    rescue Stripe::StripeError => e
+      render json: { error: e.message }, status: :bad_request
+    rescue => e
+      Rails.logger.error "Payment confirmation error: #{e.message}"
+      render json: { error: 'Payment confirmation failed' }, status: :internal_server_error
+    end
   end
 
   # DELETE /api/v1/payments/reset_connect_account

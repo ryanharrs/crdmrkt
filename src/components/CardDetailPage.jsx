@@ -201,12 +201,29 @@ const CardDetailPage = () => {
     setShowPaymentModal(true)
   }
 
-  const handlePaymentSuccess = (paymentIntent) => {
+  const handlePaymentSuccess = async (paymentIntent) => {
     setShowPaymentModal(false)
-    // Show success message or redirect
+    
+    // Refresh the card data to show it's now sold
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/v1/cards/${cardId}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        setCard(data.card)
+      }
+    } catch (error) {
+      console.error('Failed to refresh card data:', error)
+    }
+    
+    // Show success message
     alert('Payment successful! You now own this card.')
-    // Could redirect to a purchase confirmation page
-    navigate('/')
+    
+    // Redirect to home page after a short delay to show the updated status
+    setTimeout(() => {
+      navigate('/')
+    }, 2000)
   }
 
   const handlePaymentError = (error) => {
