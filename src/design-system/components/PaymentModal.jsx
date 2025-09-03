@@ -20,6 +20,19 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
   const [deliveryOptions, setDeliveryOptions] = useState([])
   const [selectedDeliveryOption, setSelectedDeliveryOption] = useState(null)
   const [loadingDeliveryOptions, setLoadingDeliveryOptions] = useState(true)
+  const [useSameAddress, setUseSameAddress] = useState(true)
+  const [deliveryDetails, setDeliveryDetails] = useState({
+    name: '',
+    email: '',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'CA'
+    }
+  })
   const [billingDetails, setBillingDetails] = useState({
     name: '',
     email: '',
@@ -235,6 +248,24 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
     }
   }, [card?.owner_id])
 
+  const handleDeliveryChange = (field, value) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.')
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }))
+    } else {
+      setDeliveryDetails(prev => ({
+        ...prev,
+        [field]: value
+      }))
+    }
+  }
+
   const handleBillingChange = (field, value) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.')
@@ -250,6 +281,14 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
         ...prev,
         [field]: value
       }))
+    }
+  }
+
+  const handleAddressToggle = (checked) => {
+    setUseSameAddress(checked)
+    if (checked) {
+      // Copy delivery details to billing when toggling on
+      setBillingDetails(deliveryDetails)
     }
   }
 
@@ -294,11 +333,14 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
         throw new Error(error)
       }
 
+      // Use delivery address for billing if same address is selected
+      const finalBillingDetails = useSameAddress ? deliveryDetails : billingDetails
+
       // Confirm payment with Stripe
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
           card: cardNumberElement,
-          billing_details: billingDetails
+          billing_details: finalBillingDetails
         }
       })
 
@@ -485,9 +527,9 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Billing Information */}
+        {/* Delivery Information */}
         <div style={formSectionStyles}>
-          <h3 style={sectionTitleStyles}>Billing Information</h3>
+          <h3 style={sectionTitleStyles}>Delivery Information</h3>
           
           <div style={inputRowStyles}>
             <div style={inputColumnStyles}>
@@ -496,8 +538,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
                 type="text"
                 style={inputStyles}
                 placeholder="John Doe"
-                value={billingDetails.name}
-                onChange={(e) => handleBillingChange('name', e.target.value)}
+                value={deliveryDetails.name}
+                onChange={(e) => handleDeliveryChange('name', e.target.value)}
                 required
               />
             </div>
@@ -507,21 +549,21 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
                 type="email"
                 style={inputStyles}
                 placeholder="john@example.com"
-                value={billingDetails.email}
-                onChange={(e) => handleBillingChange('email', e.target.value)}
+                value={deliveryDetails.email}
+                onChange={(e) => handleDeliveryChange('email', e.target.value)}
                 required
               />
             </div>
           </div>
 
           <div style={{ marginBottom: theme.spacing[4] }}>
-            <label style={labelStyles}>Address</label>
+            <label style={labelStyles}>Delivery Address</label>
             <input
               type="text"
               style={inputStyles}
               placeholder="123 Main Street"
-              value={billingDetails.address.line1}
-              onChange={(e) => handleBillingChange('address.line1', e.target.value)}
+              value={deliveryDetails.address.line1}
+              onChange={(e) => handleDeliveryChange('address.line1', e.target.value)}
               required
             />
           </div>
@@ -532,8 +574,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
               type="text"
               style={inputStyles}
               placeholder="Apartment, suite, etc."
-              value={billingDetails.address.line2}
-              onChange={(e) => handleBillingChange('address.line2', e.target.value)}
+              value={deliveryDetails.address.line2}
+              onChange={(e) => handleDeliveryChange('address.line2', e.target.value)}
             />
           </div>
 
@@ -544,8 +586,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
                 type="text"
                 style={inputStyles}
                 placeholder="Toronto"
-                value={billingDetails.address.city}
-                onChange={(e) => handleBillingChange('address.city', e.target.value)}
+                value={deliveryDetails.address.city}
+                onChange={(e) => handleDeliveryChange('address.city', e.target.value)}
                 required
               />
             </div>
@@ -555,8 +597,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
                 type="text"
                 style={inputStyles}
                 placeholder="ON"
-                value={billingDetails.address.state}
-                onChange={(e) => handleBillingChange('address.state', e.target.value)}
+                value={deliveryDetails.address.state}
+                onChange={(e) => handleDeliveryChange('address.state', e.target.value)}
                 required
               />
             </div>
@@ -566,8 +608,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
                 type="text"
                 style={inputStyles}
                 placeholder="M5V 3A8"
-                value={billingDetails.address.postal_code}
-                onChange={(e) => handleBillingChange('address.postal_code', e.target.value)}
+                value={deliveryDetails.address.postal_code}
+                onChange={(e) => handleDeliveryChange('address.postal_code', e.target.value)}
                 required
               />
             </div>
@@ -577,8 +619,8 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
             <label style={labelStyles}>Country</label>
             <select
               style={inputStyles}
-              value={billingDetails.address.country}
-              onChange={(e) => handleBillingChange('address.country', e.target.value)}
+              value={deliveryDetails.address.country}
+              onChange={(e) => handleDeliveryChange('address.country', e.target.value)}
               required
             >
               <option value="CA">Canada</option>
@@ -596,6 +638,159 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
               <option value="ES">Spain</option>
             </select>
           </div>
+        </div>
+
+        {/* Billing Address Toggle */}
+        <div style={formSectionStyles}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing[3],
+            marginBottom: theme.spacing[4],
+            padding: theme.spacing[4],
+            backgroundColor: theme.colors.neutral[25],
+            borderRadius: theme.borderRadius.md,
+            border: `1px solid ${theme.colors.neutral[200]}`
+          }}>
+            <input
+              type="checkbox"
+              id="sameAddress"
+              checked={useSameAddress}
+              onChange={(e) => handleAddressToggle(e.target.checked)}
+              style={{
+                width: '18px',
+                height: '18px',
+                accentColor: theme.colors.primary[500]
+              }}
+            />
+            <label 
+              htmlFor="sameAddress" 
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.neutral[700],
+                fontWeight: theme.typography.fontWeight.medium,
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}
+            >
+              Use same address for billing
+            </label>
+          </div>
+
+          {/* Separate Billing Address Section */}
+          {!useSameAddress && (
+            <div>
+              <h3 style={sectionTitleStyles}>Billing Information</h3>
+              
+              <div style={inputRowStyles}>
+                <div style={inputColumnStyles}>
+                  <label style={labelStyles}>Full Name</label>
+                  <input
+                    type="text"
+                    style={inputStyles}
+                    placeholder="Billing name"
+                    value={billingDetails.name}
+                    onChange={(e) => handleBillingChange('name', e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={inputColumnStyles}>
+                  <label style={labelStyles}>Email</label>
+                  <input
+                    type="email"
+                    style={inputStyles}
+                    placeholder="billing@email.com"
+                    value={billingDetails.email}
+                    onChange={(e) => handleBillingChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: theme.spacing[4] }}>
+                <label style={labelStyles}>Billing Address</label>
+                <input
+                  type="text"
+                  style={inputStyles}
+                  placeholder="123 Billing Street"
+                  value={billingDetails.address.line1}
+                  onChange={(e) => handleBillingChange('address.line1', e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: theme.spacing[4] }}>
+                <label style={labelStyles}>Address Line 2 (Optional)</label>
+                <input
+                  type="text"
+                  style={inputStyles}
+                  placeholder="Apartment, suite, etc."
+                  value={billingDetails.address.line2}
+                  onChange={(e) => handleBillingChange('address.line2', e.target.value)}
+                />
+              </div>
+              
+              <div style={inputRowStyles}>
+                <div style={inputColumnStyles}>
+                  <label style={labelStyles}>City</label>
+                  <input
+                    type="text"
+                    style={inputStyles}
+                    placeholder="Toronto"
+                    value={billingDetails.address.city}
+                    onChange={(e) => handleBillingChange('address.city', e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={inputColumnStyles}>
+                  <label style={labelStyles}>Province/State</label>
+                  <input
+                    type="text"
+                    style={inputStyles}
+                    placeholder="ON"
+                    value={billingDetails.address.state}
+                    onChange={(e) => handleBillingChange('address.state', e.target.value)}
+                    required
+                  />
+                </div>
+                <div style={inputColumnStyles}>
+                  <label style={labelStyles}>Postal Code</label>
+                  <input
+                    type="text"
+                    style={inputStyles}
+                    placeholder="M5V 3A8"
+                    value={billingDetails.address.postal_code}
+                    onChange={(e) => handleBillingChange('address.postal_code', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div style={{ marginBottom: theme.spacing[4] }}>
+                <label style={labelStyles}>Country</label>
+                <select
+                  style={inputStyles}
+                  value={billingDetails.address.country}
+                  onChange={(e) => handleBillingChange('address.country', e.target.value)}
+                  required
+                >
+                  <option value="CA">Canada</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="AU">Australia</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="JP">Japan</option>
+                  <option value="BR">Brazil</option>
+                  <option value="MX">Mexico</option>
+                  <option value="NL">Netherlands</option>
+                  <option value="SE">Sweden</option>
+                  <option value="IT">Italy</option>
+                  <option value="ES">Spain</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Payment Method */}
