@@ -6,7 +6,13 @@ import Modal from './Modal'
 import Button from './Button'
 
 // Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+console.log('Stripe publishable key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+console.log('All env vars:', import.meta.env)
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+if (!stripeKey) {
+  console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set!')
+}
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
 
 const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
   const stripe = useStripe()
@@ -509,6 +515,23 @@ const PaymentForm = ({ card, onSuccess, onError, onClose }) => {
 }
 
 const PaymentModal = ({ isOpen, onClose, card, onSuccess, onError }) => {
+  if (!stripePromise) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Payment Error"
+        size="md"
+        showCloseButton={true}
+      >
+        <div style={{ padding: '24px', textAlign: 'center' }}>
+          <p>Payment system is not properly configured. Please contact support.</p>
+          <Button onClick={onClose} style={{ marginTop: '16px' }}>Close</Button>
+        </div>
+      </Modal>
+    )
+  }
+
   return (
     <Elements stripe={stripePromise}>
       <Modal
