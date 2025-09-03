@@ -47,10 +47,6 @@ const UserDropdown = ({ user, onPaymentSetup, onDeliverySetup, onLogout }) => {
     transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
   }
 
-  const handleTriggerClick = () => {
-    setIsOpen(!isOpen)
-  }
-
   const handlePaymentSetup = () => {
     setIsOpen(false)
     onPaymentSetup()
@@ -68,10 +64,9 @@ const UserDropdown = ({ user, onPaymentSetup, onDeliverySetup, onLogout }) => {
 
   return (
     <Dropdown
-      isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
+      onToggle={setIsOpen}
       trigger={
-        <button style={triggerStyles} onClick={handleTriggerClick}>
+        <button style={triggerStyles}>
           <div>
             <span style={welcomeTextStyles}>Welcome, </span>
             <span style={userNameStyles}>{user.first_name}</span>

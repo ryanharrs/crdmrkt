@@ -10,6 +10,7 @@ const CardDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
   const token = localStorage.getItem('auth_token')
@@ -31,13 +32,9 @@ const CardDetailPage = () => {
 
   const contentStyles = {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: theme.spacing[8],
-    alignItems: 'start',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-      gap: theme.spacing[6]
-    }
+    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+    gap: isMobile ? theme.spacing[6] : theme.spacing[8],
+    alignItems: 'start'
   }
 
   const imageContainerStyles = {
@@ -164,6 +161,16 @@ const CardDetailPage = () => {
     borderRadius: theme.borderRadius.lg,
     border: `1px solid ${theme.colors.error[200]}`
   }
+
+  // Handle window resize for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const fetchCard = async () => {

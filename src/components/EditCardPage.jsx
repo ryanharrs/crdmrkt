@@ -11,6 +11,7 @@ const EditCardPage = () => {
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [editData, setEditData] = useState({})
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
   const token = localStorage.getItem('auth_token')
@@ -39,13 +40,9 @@ const EditCardPage = () => {
 
   const contentStyles = {
     display: 'grid',
-    gridTemplateColumns: '300px 1fr',
-    gap: theme.spacing[8],
-    alignItems: 'start',
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-      gap: theme.spacing[6]
-    }
+    gridTemplateColumns: isMobile ? '1fr' : '300px 1fr',
+    gap: isMobile ? theme.spacing[6] : theme.spacing[8],
+    alignItems: 'start'
   }
 
   const imageContainerStyles = {
@@ -162,6 +159,16 @@ const EditCardPage = () => {
     border: `1px solid ${theme.colors.error[200]}`,
     padding: theme.spacing[6]
   }
+
+  // Handle window resize for responsive design
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const fetchCard = async () => {

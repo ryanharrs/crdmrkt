@@ -6,8 +6,6 @@ import Modal from './Modal'
 import Button from './Button'
 
 // Initialize Stripe
-console.log('Stripe publishable key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
-console.log('All env vars:', import.meta.env)
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 if (!stripeKey) {
   console.error('VITE_STRIPE_PUBLISHABLE_KEY is not set!')

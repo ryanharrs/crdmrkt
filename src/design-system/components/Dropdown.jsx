@@ -8,8 +8,11 @@ const Dropdown = ({
   disabled = false,
   onToggle = () => {},
   className = '',
-  ...props 
-}) => {
+  // Remove any React-specific props that shouldn't be on DOM elements
+  isOpen: _isOpenProp,
+  onClose: _onCloseProp,
+  ...domProps 
+  }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const dropdownRef = useRef(null)
@@ -92,7 +95,15 @@ const Dropdown = ({
       ref={dropdownRef}
       style={containerStyles}
       className={className}
-      {...props}
+      // Only spread DOM-safe props
+      {...Object.fromEntries(
+        Object.entries(domProps).filter(([key]) => 
+          // Allow standard HTML attributes
+          key.startsWith('data-') || 
+          key.startsWith('aria-') || 
+          ['id', 'role', 'tabIndex', 'title'].includes(key)
+        )
+      )}
     >
       <div 
         onClick={toggleDropdown}
