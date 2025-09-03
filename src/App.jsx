@@ -9,6 +9,8 @@ import CardDetailPage from './components/CardDetailPage'
 import HomePage from './components/HomePage'
 import PaymentSetupPage from './components/PaymentSetupPage'
 import DeliveryOptionsPage from './components/DeliveryOptionsPage'
+import MyCardsPage from './components/MyCardsPage'
+import EditCardPage from './components/EditCardPage'
 
 function App() {
   const [favoriteNumber, setFavoriteNumber] = useState(null)
@@ -63,12 +65,15 @@ function App() {
           
           if (response.ok) {
             const data = await response.json()
+            localStorage.setItem('user', JSON.stringify(data.user))
             setUser(data.user)
           } else {
             localStorage.removeItem('auth_token')
+            localStorage.removeItem('user')
           }
         } catch (err) {
           localStorage.removeItem('auth_token')
+          localStorage.removeItem('user')
         }
       }
       setAuthLoading(false)
@@ -131,6 +136,7 @@ function App() {
     }
 
     localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
     setUser(data.user)
     setShowLogin(false)
   }
@@ -152,12 +158,14 @@ function App() {
     }
 
     localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
     setUser(data.user)
     setShowSignup(false)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('user')
     setUser(null)
   }
 
@@ -168,6 +176,10 @@ function App() {
 
   const handleDeliverySetup = () => {
     window.location.href = '/delivery-options'
+  }
+
+  const handleMyCards = () => {
+    window.location.href = '/my-cards'
   }
 
   const handleCardUpload = async (cardData, addAnother = false) => {
@@ -269,6 +281,7 @@ function App() {
           onUploadCards={() => setShowCardUpload(true)}
           onPaymentSetup={handlePaymentSetup}
           onDeliverySetup={handleDeliverySetup}
+          onMyCards={handleMyCards}
         />
         
         <main>
@@ -278,7 +291,7 @@ function App() {
               element={<HomePage />} 
             />
             <Route 
-              path="/card/:cardId" 
+              path="/cards/:cardId" 
               element={<CardDetailPage />} 
             />
             <Route 
@@ -288,6 +301,14 @@ function App() {
             <Route 
               path="/delivery-options" 
               element={<DeliveryOptionsPage />} 
+            />
+            <Route 
+              path="/my-cards" 
+              element={<MyCardsPage />} 
+            />
+            <Route 
+              path="/edit-card/:cardId" 
+              element={<EditCardPage />} 
             />
           </Routes>
         </main>

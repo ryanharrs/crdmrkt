@@ -5,7 +5,7 @@ const HomePage = () => {
   const navigate = useNavigate()
 
   const handleCardClick = (card) => {
-    navigate(`/card/${card.id}`)
+    navigate(`/cards/${card.id}`)
   }
 
   return (

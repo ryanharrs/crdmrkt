@@ -12,6 +12,7 @@ const Navigation = ({
   onUploadCards,
   onPaymentSetup,
   onDeliverySetup,
+  onMyCards,
   className = '',
   ...props 
 }) => {
@@ -98,8 +99,9 @@ const Navigation = ({
   )
 
   const handleViewCards = () => {
-    // TODO: Implement view cards functionality
-    console.log('View Your Cards clicked')
+    if (onMyCards) {
+      onMyCards()
+    }
   }
 
   const handleUploadCards = () => {

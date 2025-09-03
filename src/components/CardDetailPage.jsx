@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { theme } from '../design-system/theme'
-import { Button, PaymentModal } from '../design-system'
+import { Button, PaymentModal, Input } from '../design-system'
 
 const CardDetailPage = () => {
   const { cardId } = useParams()
@@ -10,6 +10,10 @@ const CardDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+  const token = localStorage.getItem('auth_token')
+  const currentUser = token ? JSON.parse(localStorage.getItem('user') || '{}') : null
 
   const containerStyles = {
     maxWidth: '1200px',
@@ -18,7 +22,10 @@ const CardDetailPage = () => {
     minHeight: '100vh'
   }
 
-  const backButtonStyles = {
+  const headerStyles = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: theme.spacing[6]
   }
 
@@ -26,7 +33,11 @@ const CardDetailPage = () => {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: theme.spacing[8],
-    alignItems: 'start'
+    alignItems: 'start',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+      gap: theme.spacing[6]
+    }
   }
 
   const imageContainerStyles = {
@@ -34,13 +45,14 @@ const CardDetailPage = () => {
     backgroundColor: theme.colors.neutral[50],
     borderRadius: theme.borderRadius.xl,
     overflow: 'hidden',
-    border: `1px solid ${theme.colors.neutral[200]}`
+    border: `1px solid ${theme.colors.neutral[200]}`,
+    aspectRatio: '1'
   }
 
   const imageStyles = {
     width: '100%',
-    height: 'auto',
-    display: 'block'
+    height: '100%',
+    objectFit: 'cover'
   }
 
   const detailsStyles = {
@@ -55,23 +67,31 @@ const CardDetailPage = () => {
     fontSize: theme.typography.fontSize['3xl'],
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.neutral[900],
-    marginBottom: theme.spacing[2],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
+    marginBottom: theme.spacing[2]
   }
 
   const subtitleStyles = {
     fontSize: theme.typography.fontSize.xl,
     color: theme.colors.neutral[600],
-    marginBottom: theme.spacing[6],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
+    marginBottom: theme.spacing[6]
   }
+
+  const statusBadgeStyles = (forSale) => ({
+    display: 'inline-block',
+    padding: `${theme.spacing[1]} ${theme.spacing[3]}`,
+    borderRadius: theme.borderRadius.full,
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.bold,
+    backgroundColor: forSale ? theme.colors.success[500] : theme.colors.neutral[500],
+    color: theme.colors.white,
+    marginBottom: theme.spacing[4]
+  })
 
   const priceStyles = {
     fontSize: theme.typography.fontSize['2xl'],
     fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.primary[600],
-    marginBottom: theme.spacing[6],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
+    marginBottom: theme.spacing[6]
   }
 
   const sectionStyles = {
@@ -82,67 +102,46 @@ const CardDetailPage = () => {
     fontSize: theme.typography.fontSize.lg,
     fontWeight: theme.typography.fontWeight.semibold,
     color: theme.colors.neutral[900],
-    marginBottom: theme.spacing[3],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
+    marginBottom: theme.spacing[4],
+    borderBottom: `1px solid ${theme.colors.neutral[200]}`,
+    paddingBottom: theme.spacing[2]
   }
 
-  const detailRowStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
+  const fieldRowStyles = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 2fr',
+    gap: theme.spacing[4],
     alignItems: 'center',
-    padding: `${theme.spacing[3]} 0`,
-    borderBottom: `1px solid ${theme.colors.neutral[100]}`
+    marginBottom: theme.spacing[3],
+    padding: theme.spacing[3],
+    borderRadius: theme.borderRadius.md,
+    ':hover': {
+      backgroundColor: theme.colors.neutral[25]
+    }
   }
 
   const labelStyles = {
     fontSize: theme.typography.fontSize.sm,
     fontWeight: theme.typography.fontWeight.medium,
-    color: theme.colors.neutral[700],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
+    color: theme.colors.neutral[700]
   }
 
   const valueStyles = {
-    fontSize: theme.typography.fontSize.sm,
-    color: theme.colors.neutral[900],
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
-  }
-
-  const badgeContainerStyles = {
-    display: 'flex',
-    gap: theme.spacing[2],
-    marginBottom: theme.spacing[4],
-    flexWrap: 'wrap'
-  }
-
-  const badgeStyles = {
-    backgroundColor: theme.colors.primary[500],
-    color: theme.colors.white,
-    padding: `${theme.spacing[1]} ${theme.spacing[3]}`,
-    borderRadius: theme.borderRadius.full,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.medium,
-    fontFamily: theme.typography.fontFamily.sans.join(', ')
-  }
-
-  const rookieBadgeStyles = {
-    ...badgeStyles,
-    backgroundColor: theme.colors.warning[500]
-  }
-
-  const gradedBadgeStyles = {
-    ...badgeStyles,
-    backgroundColor: theme.colors.success[500]
-  }
-
-  const descriptionStyles = {
     fontSize: theme.typography.fontSize.base,
-    color: theme.colors.neutral[700],
-    lineHeight: theme.typography.lineHeight.relaxed,
-    fontFamily: theme.typography.fontFamily.sans.join(', '),
-    backgroundColor: theme.colors.neutral[25],
-    padding: theme.spacing[4],
-    borderRadius: theme.borderRadius.md,
-    border: `1px solid ${theme.colors.neutral[100]}`
+    color: theme.colors.neutral[900],
+    fontWeight: theme.typography.fontWeight.medium
+  }
+
+  const editFormStyles = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing[4]
+  }
+
+  const buttonGroupStyles = {
+    display: 'flex',
+    gap: theme.spacing[3],
+    marginTop: theme.spacing[6]
   }
 
   const loadingStyles = {
@@ -166,17 +165,9 @@ const CardDetailPage = () => {
     border: `1px solid ${theme.colors.error[200]}`
   }
 
-  const mobileStyles = {
-    '@media (max-width: 768px)': {
-      gridTemplateColumns: '1fr',
-      gap: theme.spacing[6]
-    }
-  }
-
   useEffect(() => {
     const fetchCard = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
         const response = await fetch(`${apiUrl}/api/v1/cards/${cardId}`)
         
         if (!response.ok) {
@@ -203,10 +194,8 @@ const CardDetailPage = () => {
 
   const handlePaymentSuccess = async (paymentIntent) => {
     setShowPaymentModal(false)
-    
-    // Refresh the card data to show it's now sold
+
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       const response = await fetch(`${apiUrl}/api/v1/cards/${cardId}`)
       
       if (response.ok) {
@@ -217,10 +206,8 @@ const CardDetailPage = () => {
       console.error('Failed to refresh card data:', error)
     }
     
-    // Show success message
     alert('Payment successful! You now own this card.')
     
-    // Redirect to home page after a short delay to show the updated status
     setTimeout(() => {
       navigate('/')
     }, 2000)
@@ -228,7 +215,6 @@ const CardDetailPage = () => {
 
   const handlePaymentError = (error) => {
     console.error('Payment error:', error)
-    // Error is handled within the modal
   }
 
   const formatPrice = (price) => {
@@ -236,9 +222,13 @@ const CardDetailPage = () => {
     return `$${parseFloat(price).toFixed(2)}`
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString()
+  const renderField = (label, value) => {
+    return (
+      <div style={fieldRowStyles}>
+        <span style={labelStyles}>{label}</span>
+        <span style={valueStyles}>{value || 'Not specified'}</span>
+      </div>
+    )
   }
 
   if (loading) {
@@ -276,52 +266,42 @@ const CardDetailPage = () => {
 
   return (
     <div style={containerStyles}>
-      {/* Back Button */}
-      <div style={backButtonStyles}>
-        <Button variant="secondary" onClick={() => navigate('/')}>
-          ← Back to Gallery
+      {/* Header */}
+      <div style={headerStyles}>
+        <Button variant="secondary" onClick={() => navigate(-1)}>
+          ← Back
         </Button>
+
       </div>
 
       {/* Main Content */}
-      <div style={{ ...contentStyles, ...mobileStyles }}>
+      <div style={contentStyles}>
         {/* Image Section */}
         <div style={imageContainerStyles}>
           <img
             src={card.front_image_large_url || card.front_image_url}
             alt={`${card.player_name} ${card.year} ${card.set_name} #${card.card_number}`}
             style={imageStyles}
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/400x400/f3f4f6/6b7280?text=No+Image+Available'
+            }}
           />
         </div>
 
         {/* Details Section */}
         <div style={detailsStyles}>
-          {/* Title */}
+          {/* Title and Status */}
           <h1 style={titleStyles}>{card.player_name}</h1>
           <p style={subtitleStyles}>
             {card.year} {card.manufacturer} {card.set_name} #{card.card_number}
           </p>
-
-          {/* Badges */}
-          <div style={badgeContainerStyles}>
-            {card.rookie_card && (
-              <span style={rookieBadgeStyles}>ROOKIE</span>
-            )}
-            {card.graded && (
-              <span style={gradedBadgeStyles}>
-                {card.grading_company} {card.grade}
-              </span>
-            )}
-            {card.autographed && (
-              <span style={badgeStyles}>AUTOGRAPHED</span>
-            )}
-            {card.memorabilia && (
-              <span style={badgeStyles}>MEMORABILIA</span>
-            )}
+          
+          <div style={statusBadgeStyles(card.for_sale)}>
+            {card.for_sale ? 'FOR SALE' : 'NOT FOR SALE'}
           </div>
 
           {/* Price */}
-          {card.for_sale && (
+          {card.for_sale && card.asking_price && (
             <div style={priceStyles}>
               {formatPrice(card.asking_price)}
               {card.price_negotiable && (
@@ -332,135 +312,83 @@ const CardDetailPage = () => {
             </div>
           )}
 
-          {/* Card Information */}
+          {/* Basic Information */}
           <div style={sectionStyles}>
-            <h3 style={sectionTitleStyles}>Card Information</h3>
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Player</span>
-              <span style={valueStyles}>{card.player_name}</span>
+            <h3 style={sectionTitleStyles}>Basic Information</h3>
+            {renderField('Player Name', card.player_name)}
+            {renderField('Team', card.team)}
+            {renderField('Position', card.position)}
+            {renderField('Jersey Number', card.jersey_number)}
+          </div>
+
+          {/* Card Details */}
+          <div style={sectionStyles}>
+            <h3 style={sectionTitleStyles}>Card Details</h3>
+            {renderField('Year', card.year)}
+            {renderField('Manufacturer', card.manufacturer)}
+            {renderField('Set Name', card.set_name)}
+            {renderField('Card Number', card.card_number)}
+            {renderField('Condition', card.condition)}
+          </div>
+
+          {/* Special Features */}
+          <div style={sectionStyles}>
+            <h3 style={sectionTitleStyles}>Special Features</h3>
+            <div style={fieldRowStyles}>
+              <span style={labelStyles}>Rookie Card</span>
+              <span style={valueStyles}>{card.rookie_card ? 'Yes' : 'No'}</span>
             </div>
-            
-            {card.team && (
-              <div style={detailRowStyles}>
-                <span style={labelStyles}>Team</span>
-                <span style={valueStyles}>{card.team}</span>
-              </div>
-            )}
-            
-            {card.position && (
-              <div style={detailRowStyles}>
-                <span style={labelStyles}>Position</span>
-                <span style={valueStyles}>{card.position}</span>
-              </div>
-            )}
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Year</span>
-              <span style={valueStyles}>{card.year}</span>
+            <div style={fieldRowStyles}>
+              <span style={labelStyles}>Autographed</span>
+              <span style={valueStyles}>{card.autographed ? 'Yes' : 'No'}</span>
             </div>
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Manufacturer</span>
-              <span style={valueStyles}>{card.manufacturer}</span>
+            <div style={fieldRowStyles}>
+              <span style={labelStyles}>Memorabilia</span>
+              <span style={valueStyles}>{card.memorabilia ? 'Yes' : 'No'}</span>
             </div>
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Set</span>
-              <span style={valueStyles}>{card.set_name}</span>
-            </div>
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Card Number</span>
-              <span style={valueStyles}>#{card.card_number}</span>
-            </div>
-            
-            <div style={detailRowStyles}>
-              <span style={labelStyles}>Condition</span>
-              <span style={valueStyles}>{card.condition_grade_display}</span>
-            </div>
-            
-            {card.rarity && (
-              <div style={detailRowStyles}>
-                <span style={labelStyles}>Rarity</span>
-                <span style={valueStyles}>{card.rarity}</span>
-              </div>
-            )}
-            
-            {card.serial_number && (
-              <div style={detailRowStyles}>
-                <span style={labelStyles}>Serial Number</span>
-                <span style={valueStyles}>{card.serial_number}</span>
-              </div>
+            {card.graded && (
+              <>
+                <div style={fieldRowStyles}>
+                  <span style={labelStyles}>Grading Company</span>
+                  <span style={valueStyles}>{card.grading_company}</span>
+                </div>
+                <div style={fieldRowStyles}>
+                  <span style={labelStyles}>Grade</span>
+                  <span style={valueStyles}>{card.grade}</span>
+                </div>
+              </>
             )}
           </div>
 
-          {/* Additional Information */}
-          {(card.estimated_value || card.memorabilia_type) && (
+          {/* Owner Information */}
+          {card.owner && (
             <div style={sectionStyles}>
-              <h3 style={sectionTitleStyles}>Additional Details</h3>
-              
-              {card.estimated_value && (
-                <div style={detailRowStyles}>
-                  <span style={labelStyles}>Estimated Value</span>
-                  <span style={valueStyles}>{formatPrice(card.estimated_value)}</span>
-                </div>
-              )}
-              
-              {card.memorabilia_type && (
-                <div style={detailRowStyles}>
-                  <span style={labelStyles}>Memorabilia Type</span>
-                  <span style={valueStyles}>{card.memorabilia_type}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Description */}
-          {card.description && (
-            <div style={sectionStyles}>
-              <h3 style={sectionTitleStyles}>Description</h3>
-              <div style={descriptionStyles}>
-                {card.description}
+              <h3 style={sectionTitleStyles}>Owner</h3>
+              <div style={fieldRowStyles}>
+                <span style={labelStyles}>Seller</span>
+                <span style={valueStyles}>{card.owner.full_name}</span>
               </div>
             </div>
           )}
 
-          {/* Purchase Button or Sold Status */}
-          <div style={{ marginTop: theme.spacing[8] }}>
-            {card.for_sale ? (
+          {/* Purchase Button */}
+          {card.for_sale && (
+            <div style={buttonGroupStyles}>
               <Button 
                 variant="primary" 
                 size="lg" 
                 onClick={handlePurchase}
-                style={{ width: '100%' }}
+                style={{ flex: 1 }}
               >
-                Purchase Card
+                Purchase Card - {formatPrice(card.asking_price)}
               </Button>
-            ) : (
-              <div style={{
-                padding: theme.spacing[4],
-                backgroundColor: theme.colors.neutral[100],
-                borderRadius: theme.borderRadius.md,
-                textAlign: 'center',
-                border: `1px solid ${theme.colors.neutral[300]}`
-              }}>
-                <div style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.semibold,
-                  color: theme.colors.neutral[600],
-                  fontFamily: theme.typography.fontFamily.sans.join(', ')
-                }}>
-                  This card has been sold
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Payment Modal */}
-      {showPaymentModal && card && (
+      {showPaymentModal && (
         <PaymentModal
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
